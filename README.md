@@ -1,6 +1,6 @@
 <br/>
 <div align="center">
-This is a list of examples and scripts compiled by the Snyk Customer Success team for the purposed of solving specific use cases raised by customers.
+This is a list of examples and scripts compiled by the Snyk Customer Success team for the purpose of solving specific use cases raised by customers.
 </div>
 <br/>
 
