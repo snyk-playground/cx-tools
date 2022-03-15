@@ -1,7 +1,12 @@
 <br/>
 <div align="center">
-This is a list of scripts created by Customer Success of shared with the CS that has the purposed of solving specific issues raised by different customers
+This is a list of examples and scripts compiled by the Snyk Customer Success team for the purpose of solving specific use cases raised by customers.
 </div>
+<br/>
+
+| :information_source: <strong>DISCLAIMER:</strong> These examples and scripts are provided for educational purposes. They are not officially supported by Snyk. However, you can create an issue if you need help or propose a Pull Request. |
+| --- |
+
 <br/>
 
 # CS Scripts
