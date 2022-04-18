@@ -164,7 +164,12 @@ async def count_targets_for_orgs(orgs, restclient, session, config):
       count_targets[origin] = 0
 
   fill_char = click.style('=')
-  with click.progressbar(orgs, length=len(orgs), show_pos=True, show_percent=True, label='Analyzing orgs...', fill_char=fill_char) as bar:
+  with click.progressbar(orgs,
+                         length=len(orgs),
+                         show_pos=True,
+                         show_percent=True,
+                         label='Analyzing orgs...',
+                         fill_char=fill_char) as bar:
     for org in bar:
       #log(f"Checking {org.id} [ \"{org.name}\" | {org.slug} ]")
       targets = get_org_targets(restclient, org.id)
