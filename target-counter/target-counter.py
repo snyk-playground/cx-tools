@@ -1,5 +1,5 @@
 #
-# Example: Remove all empty targets in a Snyk group
+# Example: Counts all of the targets in the specified SNYK_GROUP
 #
 
 
