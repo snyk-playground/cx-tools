@@ -36,7 +36,8 @@ This is a list of examples and scripts compiled by the Snyk Customer Success tea
 # Customers Shared Scripts
 - [Citrix - BitBucket sync to Snyk](BB-to-snyk/bitbucketToSnyk-share.py)
 - [MessageMedia - Export BitBucket projects to JSON format](create-snyk-json/create-snyk-import-json/py)
-- [A package that wraps pysnyk library for easier usage from cli interfaces](https://github.com/avishayil/python-snyk-test)
+- [Avishai - A package that wraps pysnyk library for easier usage from cli interfaces](https://github.com/avishayil/python-snyk-test)
+- [Lunar - Prometheus exporter for Snyk ](https://snyk.io/blog/vulnerability-monitoring-with-snyk-prometheus-and-grafana/)
 
 # Snyk repos and tools
 - [A curated list of awesome Snyk community contributions](https://github.com/snyk/awesome-snyk-community)
