@@ -42,5 +42,6 @@ This is a list of examples and scripts compiled by the Snyk Customer Success tea
 # Snyk repos and tools
 - [A curated list of awesome Snyk community contributions](https://github.com/snyk/awesome-snyk-community)
 - [Snyk Technical Services](https://github.com/snyk-tech-services)
+- [Snyk Labs (user sync, etc)](https://github.com/snyk-labs)
 - [A Python client for the Snyk API](https://github.com/snyk-labs/pysnyk)
 - [Snyk to SPDX](https://www.npmjs.com/package/snyk2spdx) : details [here](https://snyk.io/blog/advancing-sbom-standards-snyk-spdx/)
