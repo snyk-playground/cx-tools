@@ -30,15 +30,19 @@ This is a list of examples and scripts compiled by the Snyk Customer Success tea
 - [How to Understand if vulnerability was added by developer or is a new vulnerability discovered](scripts/vul-added-or-discovered.md)
 - [How to use the Snyk API to find and remove all empty targets from a Snyk group](rm-empty-targets)
 - [How to check for "stale" projects -- not tested since a specific date](projects-not-tested-since)
+- [How to disable all notifications for a user](snyk-quiet)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
 
 # Customers Shared Scripts
 - [Citrix - BitBucket sync to Snyk](BB-to-snyk/bitbucketToSnyk-share.py)
 - [MessageMedia - Export BitBucket projects to JSON format](create-snyk-json/create-snyk-import-json/py)
+- [Avishai - A package that wraps pysnyk library for easier usage from cli interfaces](https://github.com/avishayil/python-snyk-test)
+- [Lunar - Prometheus exporter for Snyk ](https://snyk.io/blog/vulnerability-monitoring-with-snyk-prometheus-and-grafana/)(https://github.com/lunarway/snyk_exporter)
 
 # Snyk repos and tools
 - [A curated list of awesome Snyk community contributions](https://github.com/snyk/awesome-snyk-community)
 - [Snyk Technical Services](https://github.com/snyk-tech-services)
+- [Snyk Labs (user sync, etc)](https://github.com/snyk-labs)
 - [A Python client for the Snyk API](https://github.com/snyk-labs/pysnyk)
 - [Snyk to SPDX](https://www.npmjs.com/package/snyk2spdx) : details [here](https://snyk.io/blog/advancing-sbom-standards-snyk-spdx/)

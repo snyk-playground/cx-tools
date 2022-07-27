@@ -5,8 +5,8 @@ remove all empty targets from a Snyk group. It uses pysnyk to
 make a list of the orgs in the group, and then makes use of the
 following APIs to enumerate and delete the targets:
 
-[Get targets by org ID](https://apidocs.snyk.io/?version=2022-03-01%7Eexperimental#get-/orgs/-org_id-/targets)
-[Delete target by target ID](https://apidocs.snyk.io/?version=2022-03-01%7Eexperimental#delete-/orgs/-org_id-/targets/-target_id-)
+* [Get targets by org ID](https://apidocs.snyk.io/?version=2022-03-01%7Eexperimental#get-/orgs/-org_id-/targets)
+* [Delete target by target ID](https://apidocs.snyk.io/?version=2022-03-01%7Eexperimental#delete-/orgs/-org_id-/targets/-target_id-)
 
 The algorithm used by this example is as follows:
 
