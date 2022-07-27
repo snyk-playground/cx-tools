@@ -30,6 +30,7 @@ This is a list of examples and scripts compiled by the Snyk Customer Success tea
 - [How to Understand if vulnerability was added by developer or is a new vulnerability discovered](scripts/vul-added-or-discovered.md)
 - [How to use the Snyk API to find and remove all empty targets from a Snyk group](rm-empty-targets)
 - [How to count the targets in a Snyk group (by integration type)](target-counter)
+- [How to check for "stale" projects -- not tested since a specific date](projects-not-tested-since)
 - [How to disable all notifications for a user](snyk-quiet)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
