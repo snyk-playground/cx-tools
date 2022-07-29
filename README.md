@@ -1,13 +1,11 @@
+![snyk-oss-category](https://github.com/snyk-labs/oss-images/blob/main/oss-example.jpg)
+
 <br/>
 <div align="center">
 This is a list of examples and scripts compiled by the Snyk Customer Success team for the purpose of solving specific use cases raised by customers.
 </div>
 <br/>
 
-| :information_source: <strong>DISCLAIMER:</strong> These examples and scripts are provided for educational purposes. They are not officially supported by Snyk. However, you can create an issue if you need help or propose a Pull Request. |
-| --- |
-
-<br/>
 
 # CS Scripts
 - ["Remediation Advice" for Snyk Container](scripts/Remediation-container.md)
