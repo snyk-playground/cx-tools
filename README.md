@@ -2,12 +2,12 @@
 
 <br/>
 <div align="center">
-This is a list of examples and scripts compiled by the Snyk Customer Success team for the purpose of solving specific use cases raised by customers.
+This is a list of examples and scripts compiled by the Snyk Customer Experience teams for the purpose of solving specific use cases raised by customers.
 </div>
 <br/>
 
 
-# CS Scripts
+# Scripts
 - ["Remediation Advice" for Snyk Container](scripts/Remediation-container.md)
 - [Dependencies by project CSV](scripts/dependencies-csv.md)
 - [Fixed Issues by Org CSV](scripts/fixed-issues-by-org.md)
