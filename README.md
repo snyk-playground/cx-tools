@@ -30,6 +30,18 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to count the targets in a Snyk group (by integration type)](target-counter)
 - [How to check for "stale" projects -- not tested since a specific date](projects-not-tested-since)
 - [How to disable all notifications for a user](snyk-quiet)
+- [How to assign users to all orgs](scripts/assign-users-to-all-orgs.md)
+- [How to rotate snyk broker token](scripts/broker-token-rotation.md)
+- [How to bulk ignore issues](scripts/bulk-ignore-issues.md)
+- [How to create multiple orgs and copy settings fron an existing org](scripts/create-multiple-orgs-and-copy-settings.md)
+- [How to detect and import new projects](scripts/detect-and-import-new-projects.md)
+- [How to disable all interaction fron snyk for a while](scripts/disable-all-interaction-from-snyk.md)
+- [How to find all snyk projects impacted by a certain vuln](scripts/find-all-projects-affected-by-a-vuln.md)
+- [How to identify and import new repos](scripts/Identify-and-import-new-repos.md)
+- [How to find import new container images](scripts/import-new-container-images.md)
+- [How to list all issues for a snyk org](scripts/list-all-issues-for-a-snyk-org.md)
+- [How to get projects snapshots](scripts/retrieve-projects-snapshots.md)
+- [How to tag snyk projects](scripts/tag-snyk-projects.md)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
 
