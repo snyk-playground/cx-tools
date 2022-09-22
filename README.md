@@ -44,6 +44,14 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to tag snyk projects](scripts/tag-snyk-projects.md)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
+# Guides
+In the folder [webhook-examples](./webhook-examples/README.md) we provide some guides on how to use Snyk webhooks to forward Snyk vulnerability data to other systems. These examples include the following:
+- <img src="./webhook-examples/azure-devops-boards-logo.png" width="50"> [Azure DevOps Boards](./webhook-examples/azure-function-azure-boards.cs)
+- <img src="./webhook-examples/microsoft-teams-logo.png" width="50"> [Microsoft Teams](./webhook-examples/azure-function-microsoft-teams.cs)
+- <img src="./webhook-examples/newrelic-logo.png" width="50"> [New Relic Events](./webhook-examples/azure-function-newrelic.cs)
+- <img src="./webhook-examples/datadog-logo.png" width="50"> [DataDog](./webhook-examples/azure-function-datadog.cs)
+- <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk](./webhook-examples/azure-function-splunk.cs)
+
 
 # Customers Shared Scripts
 - [Citrix - BitBucket sync to Snyk](BB-to-snyk/bitbucketToSnyk-share.py)
