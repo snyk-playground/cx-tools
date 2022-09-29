@@ -1,3 +1,10 @@
+/** 
+ * 
+ * Official Splunk script - it's automatically generated when using the blueprint: 
+ * https://console.aws.amazon.com/lambda/home?#/create/configure-triggers?bp=splunk-logging
+ * 
+ */
+
 'use strict';
 
 const url = require('url');
