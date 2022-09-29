@@ -16,6 +16,7 @@
  * To create a new token for this Lambda function, refer to Splunk Docs:
  * http://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector#Create_an_Event_Collector_token
  */
+
 const loggerConfig = {
     url: process.env.SPLUNK_HEC_URL,
     token: process.env.SPLUNK_HEC_TOKEN,
