@@ -199,7 +199,7 @@ You can check, your roles should look like these (AWS build-in roles)
 
 ### 2.2 Create a Lambda function
 ---
-:genie: **The fastest and most convenient way is to go to [Splunk's development site](https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/useawshttpcollector/createlambdafunctionnodejs/) and create a Lambda function using a Splunk blueprint:** select the "splunk-logging" blueprint option, or click [here to immediate action within AWS Lambda](https://console.aws.amazon.com/lambda/home?#/create/configure-triggers?bp=splunk-logging)
+:genie: **The fastest and most convenient way is to go to [Splunk's development site](https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/useawshttpcollector/createlambdafunctionnodejs/) and create a Lambda function using a Splunk blueprint:** select the ["splunk-logging" blueprint option](https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/useawshttpcollector/createlambdafunctionnodejs), or click [here to immediate action within AWS Lambda](https://console.aws.amazon.com/lambda/home?#/create/configure-triggers?bp=splunk-logging)
 
 ---
 
@@ -220,7 +220,7 @@ Alternatively, of course we can create own our JavaScript code as described belo
 6. Attach the previously created <b>role</b> ("Use an existing role") to the Lambda function<br/>
 (you can also create a new role, but make sure that you attach the <b>AmazonAPIGatewayInvokeFullAccess policy</b> in IAM to it afterwards)<br/><br/>
 8. Click on <b>"Create function"</b><br/><br/>
-9. From the official <a href="https://dev.splunk.com/enterprise/docs/devtools">Splunk Devtools site</a> you can choose a language and find a logging script from the officially maintained scripts. You can find an <b>official, but from Snyk not maintained example script</b> here (last checked: 28.09.2022) "<a href="https://github.com/mcsnyk/Snyk-to-Splunk-HTTP-Event-Collector/blob/main/scripts/example_splunk_connecting/splunk-logging.js">splunk-logging.js"</a> file! They are <b>automatically generated</b> when using the <a href="https://console.aws.amazon.com/lambda/home?#/create/configure-triggers?bp=splunk-logging">official Splunk blueprint.</a><br/>  
+9. From the official <a href="https://dev.splunk.com/enterprise/docs/devtools">Splunk Devtools site</a> you can choose a language and find a logging script from the officially maintained scripts. You can find an <b>official, but from Snyk not maintained example script</b> here (last checked: 28.09.2022) "<a href="https://github.com/mcsnyk/Snyk-to-Splunk-HTTP-Event-Collector/blob/main/scripts/example_splunk_connecting/splunk-logging.js">splunk-logging.js"</a> file! They are <b>automatically generated</b> when using the <a href="https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/useawshttpcollector/createlambdafunctionnodejs/">official Splunk blueprint.</a><br/>  
 			</td>
 		</tr>
 	</tbody>
