@@ -1,8 +1,8 @@
 /**
  * Splunk logging for AWS Lambda
  * 
- * Official Splunk script - it's automatically generated when using the blueprint: 
- * https://console.aws.amazon.com/lambda/home?#/create/configure-triggers?bp=splunk-logging
+ * Official Splunk script - it's automatically generated when using the blueprint:
+ * https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/useawshttpcollector/createlambdafunctionnodejs/
  * 
  * This function logs to a Splunk host using Splunk's HTTP event collector API.
  *
