@@ -1,7 +1,7 @@
 /** 
  * 
- * Official Splunk script - it's automatically generated when using the blueprint: 
- * https://console.aws.amazon.com/lambda/home?#/create/configure-triggers?bp=splunk-logging
+ * Official Splunk script - it's automatically generated when using the blueprint:
+ * https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/useawshttpcollector/createlambdafunctionnodejs/
  * 
  */
 
