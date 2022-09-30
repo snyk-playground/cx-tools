@@ -1,0 +1,297 @@
+{
+	"visualizations": {
+		"viz_WZpespxr": {
+			"type": "splunk.image",
+			"options": {
+				"preserveAspectRatio": true,
+				"src": "https://res.cloudinary.com/snyk/images/f_svg,q_auto/fl_sanitize/v1/wordpress-sync/snyk-launch/snyk-launch.svg?_i=AA"
+			}
+		},
+		"viz_Sy2V4cp3": {
+			"type": "splunk.table",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"title": "Snyk Code raw values",
+			"description": "Imported via the Snyk REST API",
+			"dataSources": {
+				"primary": "ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6"
+			},
+			"options": {
+				"tableFormat": {
+					"rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByTheme)"
+				},
+				"showRowNumbers": true,
+				"count": 16,
+				"headerVisibility": "fixed"
+			}
+		},
+		"viz_6EL1D7kn": {
+			"type": "splunk.pie",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"title": "Snyk Code Issues",
+			"description": "Imported via the Snyk REST API",
+			"dataSources": {
+				"primary": "ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6"
+			},
+			"options": {
+				"labelDisplay": "valuesAndPercentage"
+			}
+		},
+		"viz_D6v86jFT": {
+			"type": "splunk.area",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"title": "Snyk Code Issues",
+			"description": "Imported via the Snyk REST API",
+			"dataSources": {
+				"primary": "ds_cEKFDJAM_ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6"
+			},
+			"options": {
+				"yAxisTitleText": "",
+				"xAxisTitleText": "CWE",
+				"dataValuesDisplay": "all",
+				"legendDisplay": "off"
+			}
+		},
+		"viz_koL8Oyv8": {
+			"type": "splunk.pie",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"title": "Snyk Code Issues",
+			"description": "Imported via the Snyk REST API",
+			"dataSources": {
+				"primary": "ds_lXAZZ8Yk_ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6"
+			},
+			"options": {
+				"labelDisplay": "valuesAndPercentage"
+			}
+		},
+		"viz_i3rk959H": {
+			"type": "splunk.bar",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"title": "Snyk Code Issues",
+			"description": "Imported via the Snyk REST API",
+			"dataSources": {
+				"primary": "ds_oFjIPEYR_ds_cEKFDJAM_ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6"
+			},
+			"options": {
+				"dataValuesDisplay": "all",
+				"yAxisTitleText": "Number of issues",
+				"xAxisTitleText": "severity",
+				"legendDisplay": "off",
+				"legendTruncation": "ellipsisStart"
+			}
+		},
+		"viz_LLMUR1Ea": {
+			"type": "splunk.table",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"title": "Snyk Code raw values",
+			"description": "Imported via the Snyk REST API",
+			"dataSources": {
+				"primary": "ds_CKbicLmD_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6"
+			},
+			"options": {
+				"tableFormat": {
+					"rowBackgroundColors": "> table | seriesByIndex(0) | pick(tableAltRowBackgroundColorsByTheme)"
+				}
+			}
+		}
+	},
+	"dataSources": {
+		"ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | mvexpand [body.event.body]| stats count by [data]"
+			},
+			"name": "Search_1"
+		},
+		"ds_Pq8CXEzX_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | stats count by body.project.issueCountsBySeverity.medium"
+			},
+			"name": "Search_1 sev_m"
+		},
+		"ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | stats count by body.project.issueCountsBySeverity.high",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 2"
+		},
+		"ds_oQHIIQxo_ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | stats count by body.event.body.data.attribute.cwe",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 3"
+		},
+		"ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | table body.data{}.attributes.title, body.data{}.attributes.severity, body.data{}.attributes.severity, body.data{}.id",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 4"
+		},
+		"ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | stats count by body.data{}.attributes.cwe{}",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 5"
+		},
+		"ds_cEKFDJAM_ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | stats count by body.data{}.attributes.cwe{}",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 6"
+		},
+		"ds_lXAZZ8Yk_ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | stats count by body.data{}.attributes.severity",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 7"
+		},
+		"ds_oFjIPEYR_ds_cEKFDJAM_ds_TyITOE06_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | stats count by body.data{}.attributes.severity",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 8"
+		},
+		"ds_CKbicLmD_ds_XvlCJ8DQ_ds_x1Dj5fQm_ds_MuSmc0u6": {
+			"type": "ds.search",
+			"options": {
+				"query": "source=\"http:asd\" (index=\"main\") | table _time source _raw | stats count by body.data{}.attributes.severity",
+				"queryParameters": {}
+			},
+			"name": "Search_1 copy 9"
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"latest": "$global_time.latest$",
+						"earliest": "$global_time.earliest$"
+					}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_global_trp": {
+			"type": "input.timerange",
+			"options": {
+				"token": "global_time",
+				"defaultValue": "-24h@h,now"
+			},
+			"title": "Global Time Range"
+		},
+		"input_DYNk0PsL": {
+			"options": {
+				"defaultValue": "Default Text",
+				"token": "text_JUm2Jb6E"
+			},
+			"title": "Text Input Title",
+			"type": "input.text"
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"display": "auto-scale"
+		},
+		"structure": [
+			{
+				"item": "viz_WZpespxr",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 10,
+					"w": 400,
+					"h": 240
+				}
+			},
+			{
+				"item": "viz_Sy2V4cp3",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 490,
+					"w": 1150,
+					"h": 340
+				}
+			},
+			{
+				"item": "viz_6EL1D7kn",
+				"type": "block",
+				"position": {
+					"x": 430,
+					"y": 10,
+					"w": 340,
+					"h": 220
+				}
+			},
+			{
+				"item": "viz_D6v86jFT",
+				"type": "block",
+				"position": {
+					"x": 790,
+					"y": 10,
+					"w": 380,
+					"h": 220
+				}
+			},
+			{
+				"item": "viz_koL8Oyv8",
+				"type": "block",
+				"position": {
+					"x": 430,
+					"y": 250,
+					"w": 340,
+					"h": 220
+				}
+			},
+			{
+				"item": "viz_i3rk959H",
+				"type": "block",
+				"position": {
+					"x": 790,
+					"y": 250,
+					"w": 380,
+					"h": 220
+				}
+			},
+			{
+				"item": "viz_LLMUR1Ea",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 250,
+					"w": 400,
+					"h": 220
+				}
+			}
+		],
+		"globalInputs": [
+			"input_global_trp",
+			"input_DYNk0PsL"
+		]
+	},
+	"description": "",
+	"title": "Snyk Code"
+}
