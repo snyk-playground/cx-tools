@@ -1,0 +1,8 @@
+anyio==3.6.1
+certifi==2022.6.15
+h11==0.12.0
+httpcore==0.15.0
+httpx==0.23.0
+idna==3.3
+rfc3986==1.5.0
+sniffio==1.2.0
