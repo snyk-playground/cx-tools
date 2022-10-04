@@ -18,6 +18,7 @@ I provided sample Azure Functions for:
 - <img src="newrelic-logo.png" width="50"> [New Relic Events](azure-function-newrelic.cs)
 - <img src="datadog-logo.png" width="50"> [DataDog](azure-function-datadog.cs)
 - <img src="splunk-logo.png" width="50"> [Splunk](azure-function-splunk.cs)
+- <img src="slack-logo.png" width="50"> [Slack](https://docs.snyk.io/snyk-api-info/snyk-webhooks/using-snyk-webhooks-to-connect-snyk-to-slack-with-aws-lambda) (This one is using AWS Lambda)
 
 These are all written in C# in order to process the payload from Snyk and send it to an Azure DevOps Board.
 
