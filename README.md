@@ -51,6 +51,7 @@ In the folder [webhook-examples](./webhook-examples/README.md) we provide some g
 - <img src="./webhook-examples/newrelic-logo.png" width="50"> [New Relic Events](./webhook-examples/azure-function-newrelic.cs)
 - <img src="./webhook-examples/datadog-logo.png" width="50"> [DataDog](./webhook-examples/azure-function-datadog.cs)
 - <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk](./webhook-examples/azure-function-splunk.cs)
+- <img src="./webhook-examples/slack-logo.png" width="50"> [Slack](https://docs.snyk.io/snyk-api-info/snyk-webhooks/using-snyk-webhooks-to-connect-snyk-to-slack-with-aws-lambda)
 
 
 # Customers Shared Scripts
