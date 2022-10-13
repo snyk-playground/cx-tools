@@ -30,6 +30,7 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to count the targets in a Snyk group (by integration type)](target-counter)
 - [How to check for "stale" projects -- not tested since a specific date](projects-not-tested-since)
 - [How to disable all notifications for a user](snyk-quiet)
+- [Generate a list (CSV) of all user accounts in a group](userlist)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
 
