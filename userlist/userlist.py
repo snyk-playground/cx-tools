@@ -1,5 +1,13 @@
 #
 # Example: export a list of all users in the group to CSV
+#          (uses https://snyk.docs.apiary.io/#reference/groups/list-members-in-a-group/list-all-members-in-a-group)
+#
+# Usage: python userlist.py
+#
+# Requires the following environment variables to be set:
+#   SNYK_GROUP - Group ID for the Snyk Group user list
+#   SNYK_TOKEN - API token with admin access to the SNYK_GROUP
+#
 #
 
 
