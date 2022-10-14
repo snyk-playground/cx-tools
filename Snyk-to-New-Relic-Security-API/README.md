@@ -12,7 +12,18 @@ Please follow the below steps to get this integration between Snyk and New Relic
 
 Please follow the regular process to create and configure an Azure Function App. An example code for the actual Azure Function code can be found in [here](./azure-function-newrelic.cs).
 
-# 2. Gather Azure Function URL
+# 2. Configure Azure Function Environment Variables
+
+Go into your Azure Function App Configuration and add the following new application settings:
+
+- NEW_RELIC_SECURITY_URL: URL for the New Relic Security API, i.e. https://security-api.newrelic.com/security/v1
+- NEW_RELIC_LICENSE_KEY: New Relic License Key
+- NEW_RELIC_INSIGHTS_URL: URL for the New Relic accounts' event API, i.e. https://insights-collector.newrelic.com/v1/accounts/{NR-ACCOUNT-ID}/events
+- NEW_RELIC_INSIGHTS_INSERT_KEY: New Relic Insights Insert Key
+
+![](./azure-function-configuration.png)
+
+# 3. Gather Azure Function URL
 
 Select the appropriate Azure Function and copy the Function URL (pls. find below an example for my New Relic Azure Function).
 
@@ -20,7 +31,7 @@ Select the appropriate Azure Function and copy the Function URL (pls. find below
 
 This is the URL you will need for the next step in order to create the Snyk Webhook.
 
-# 3. Create a Snyk Webhook
+# 4. Create a Snyk Webhook
 
 The Snyk webhook can easily be created using the provided API. The API only requires the Snyk organization ID, the Snyk authentication token and target webhook URL to be provided. An example request may look like this and you can use your favorite tool to actually send the request.
 
