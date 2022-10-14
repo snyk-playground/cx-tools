@@ -16,17 +16,17 @@ Please follow the regular process to create and configure an Azure Function App.
 
 Go into your Azure Function App Configuration and add the following new application settings:
 
-- NEW_RELIC_SECURITY_URL: URL for the New Relic Security API, i.e. https://security-api.newrelic.com/security/v1
-- NEW_RELIC_LICENSE_KEY: New Relic License Key
+- **NEW_RELIC_SECURITY_URL**: URL for the New Relic Security API, i.e. https://security-api.newrelic.com/security/v1
+- **NEW_RELIC_LICENSE_KEY**: New Relic License Key
 
 In case you are using Azure DevOps Repos in your Snyk account, you may also want to configure this application setting:
 
-- AZURE_DEVOPS_ORG: the name of your Azure DevOps organization
+- **AZURE_DEVOPS_ORG**: the name of your Azure DevOps organization
 
 There are some additional optional parameters for troubleshooting in a separate New Relic event. If you want to leverage this, then pls. also configure the next two application settings:
 
-- NEW_RELIC_INSIGHTS_URL: URL for the New Relic accounts' event API, i.e. https://insights-collector.newrelic.com/v1/accounts/{NR-ACCOUNT-ID}/events
-- NEW_RELIC_INSIGHTS_INSERT_KEY: New Relic Insights Insert Key
+- **NEW_RELIC_INSIGHTS_URL**: URL for the New Relic accounts' event API, i.e. https://insights-collector.newrelic.com/v1/accounts/{NR-ACCOUNT-ID}/events
+- **NEW_RELIC_INSIGHTS_INSERT_KEY**: New Relic Insights Insert Key
 
 ![](./azure-function-configuration.png)
 
