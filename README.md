@@ -30,9 +30,30 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to count the targets in a Snyk group (by integration type)](target-counter)
 - [How to check for "stale" projects -- not tested since a specific date](projects-not-tested-since)
 - [How to disable all notifications for a user](snyk-quiet)
-- [Generate a list (CSV) of all user accounts in a group](userlist)
+- [How to assign users to all orgs](scripts/assign-users-to-all-orgs.md)
+- [How to rotate snyk broker token](scripts/broker-token-rotation.md)
+- [How to bulk ignore issues](scripts/bulk-ignore-issues.md)
+- [How to create multiple orgs and copy settings fron an existing org](scripts/create-multiple-orgs-and-copy-settings.md)
+- [How to detect and import new projects](scripts/detect-and-import-new-projects.md)
+- [How to disable all interaction fron snyk for a while](scripts/disable-all-interaction-from-snyk.md)
+- [How to find all snyk projects impacted by a certain vuln](scripts/find-all-projects-affected-by-a-vuln.md)
+- [How to identify and import new repos](scripts/Identify-and-import-new-repos.md)
+- [How to find import new container images](scripts/import-new-container-images.md)
+- [How to list all issues for a snyk org](scripts/list-all-issues-for-a-snyk-org.md)
+- [How to get projects snapshots](scripts/retrieve-projects-snapshots.md)
+- [How to tag snyk projects](scripts/tag-snyk-projects.md)
+- [How to generate a list (CSV) of all user and service accounts in a group](userlist)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
+# Guides
+In the folder [webhook-examples](./webhook-examples/README.md) we provide some guides on how to use Snyk webhooks to forward Snyk vulnerability data to other systems. These examples include the following:
+- <img src="./webhook-examples/azure-devops-boards-logo.png" width="50"> [Azure DevOps Boards](./webhook-examples/azure-function-azure-boards.cs)
+- <img src="./webhook-examples/microsoft-teams-logo.png" width="50"> [Microsoft Teams](./webhook-examples/azure-function-microsoft-teams.cs)
+- <img src="./webhook-examples/newrelic-logo.png" width="50"> [New Relic Events](./webhook-examples/azure-function-newrelic.cs)
+- <img src="./webhook-examples/datadog-logo.png" width="50"> [DataDog](./webhook-examples/azure-function-datadog.cs)
+- <img src="./webhook-examples/slack-logo.png" width="50"> [Slack](https://docs.snyk.io/snyk-api-info/snyk-webhooks/using-snyk-webhooks-to-connect-snyk-to-slack-with-aws-lambda)
+- <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk Observability Cloud](./webhook-examples/azure-function-splunk.cs)
+- <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk Cloud HTTP-Event-Collector (HEC)](./Snyk-to-Splunk-HTTP-Event-Collector/)
 
 # Customers Shared Scripts
 - [Citrix - BitBucket sync to Snyk](BB-to-snyk/bitbucketToSnyk-share.py)
