@@ -158,11 +158,11 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
         var NEW_RELIC_INSIGHTS_URL = Environment.GetEnvironmentVariable("NEW_RELIC_INSIGHTS_URL");
-        var NEW_RELIC_INSIGHTS_INSERT_KEY = Environment.GetEnvironmentVariable("NEW_RELIC_INSIGHTS_INSERT_KEY");
+        var NEW_RELIC_LICENSE_KEY = Environment.GetEnvironmentVariable("NEW_RELIC_LICENSE_KEY");
 
         var url = NEW_RELIC_INSIGHTS_URL;
         using var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("X-Insert-Key", NEW_RELIC_INSIGHTS_INSERT_KEY);
+        client.DefaultRequestHeaders.Add("Api-Key", NEW_RELIC_LICENSE_KEY);
         var response = await client.PostAsync(url, content);
 
         string result = response.Content.ReadAsStringAsync().Result;

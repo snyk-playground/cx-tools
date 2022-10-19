@@ -46,7 +46,7 @@ For more information on how to format messages for Microsoft Teams connectors, s
 <img src="newrelic-logo.png" width="50">
 
 - NEW_RELIC_INSIGHTS_URL: URL for the New Relic accounts' event API, i.e. https://insights-collector.newrelic.com/v1/accounts/{NR-ACCOUNT-ID}/events
-- NEW_RELIC_INSIGHTS_INSERT_KEY: New Relic Insights Insert Key
+- NEW_RELIC_LICENSE_KEY: New Relic License Key
 
 ### 1.4. DataDog events:
 <img src="datadog-logo.png" width="50">

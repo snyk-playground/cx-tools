@@ -84,6 +84,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
             }
             else if (data.project.origin == "azure-repos")
             {
+                //log.LogInformation("data: " + requestBody);
                 var AZURE_DEVOPS_ORG = Environment.GetEnvironmentVariable("AZURE_DEVOPS_ORG");
                 int idxRepoURLProject = repoURL.IndexOf("/");
                 string package = "";
@@ -113,7 +114,6 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
             string browseUrl = data.project.browseUrl;
             int x = 0;
 
-            // send data to New Relic
             StringBuilder sb = new StringBuilder();
             sb.Append("{\"findings\":[");
 
@@ -123,7 +123,6 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
 
                 for (int i = 0; i < data.newIssues.Count; i++)
                 {
-                    //do something with item
                     string id = data.newIssues[i].id.ToString();
                     string issueType = data.newIssues[i].issueType;
                     string pkgName = data.newIssues[i].pkgName;
@@ -182,6 +181,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                     sb.Append("  \"pkgName\": \"" + pkgName + "\",");
                     sb.Append("  \"priorityScore\": " + priorityScore + ",");
                     sb.Append("  \"severity\": \"" + severity + "\",");
+                    sb.Append("  \"issueSeverity\": \"" + severity + "\",");
                     sb.Append("  \"cvssScore\": \"" + cvssScore + "\",");
                     sb.Append("  \"cvss.score\": \"" + cvssScore + "\",");
                     sb.Append("  \"issueVendorId\": \"" + issueVendorId + "\",");
@@ -190,7 +190,6 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                     sb.Append("  \"remediationExists\": \"" + remediationExists + "\",");
                     sb.Append("  \"remediation.exists\": \"" + remediationExists + "\",");
                     sb.Append("  \"remediationRecommendation\": \"" + remediationRecommendation + "\"");
-
                     sb.Append("}");
                 }
             }
@@ -203,6 +202,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
             if (payload != "{\"findings\":[]}")
             {
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
+
                 var NEW_RELIC_SECURITY_URL = Environment.GetEnvironmentVariable("NEW_RELIC_SECURITY_URL");
                 var NEW_RELIC_LICENSE_KEY = Environment.GetEnvironmentVariable("NEW_RELIC_LICENSE_KEY");
 
@@ -240,7 +240,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
         StringBuilder sb = new StringBuilder();
         sb.Append("{");
         sb.Append("  \"eventType\": \"SnykFindingsErrors\",");
-        sb.Append("  \"message\": \"" + ex.Message + "\",");
+        sb.Append("  \"message\": \"" + ex.Message + "\"");
         sb.Append("}");
 
         var content = new StringContent(sb.ToString());
@@ -248,11 +248,11 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
         var NEW_RELIC_INSIGHTS_URL = Environment.GetEnvironmentVariable("NEW_RELIC_INSIGHTS_URL");
-        var NEW_RELIC_INSIGHTS_INSERT_KEY = Environment.GetEnvironmentVariable("NEW_RELIC_INSIGHTS_INSERT_KEY");
+        var NEW_RELIC_LICENSE_KEY = Environment.GetEnvironmentVariable("NEW_RELIC_LICENSE_KEY");
 
         var url = NEW_RELIC_INSIGHTS_URL;
         using var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("X-Insert-Key", NEW_RELIC_INSIGHTS_INSERT_KEY);
+        client.DefaultRequestHeaders.Add("Api-Key", NEW_RELIC_LICENSE_KEY);
         var response = await client.PostAsync(url, content);
 
         string result = response.Content.ReadAsStringAsync().Result;
