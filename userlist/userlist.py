@@ -1,5 +1,5 @@
 #
-# Example: export a list of all users in the group to CSV
+# Example: export a list of all users and service accounts in the specified group to CSV
 #          (uses https://snyk.docs.apiary.io/#reference/groups/list-members-in-a-group/list-all-members-in-a-group)
 #
 # Usage: python userlist.py [Snyk group ID]
