@@ -2,10 +2,10 @@
 # Example: export a list of all users in the group to CSV
 #          (uses https://snyk.docs.apiary.io/#reference/groups/list-members-in-a-group/list-all-members-in-a-group)
 #
-# Usage: python userlist.py
+# Usage: python userlist.py [Snyk group ID]
 #
 # Requires the following environment variables to be set:
-#   SNYK_GROUP - Group ID for the Snyk Group user list
+#   SNYK_GROUP - Group ID for the Snyk Group user list. If specified on the command line, will override this value
 #   SNYK_TOKEN - API token with admin access to the SNYK_GROUP
 #
 #
@@ -42,6 +42,8 @@ async def main():
       if config[key_config_status_msg] != "":
           log(config[key_config_status_msg])
 
+      snykgroup = config[key_snykgroup]
+      
       # Client initialization
       concurrent_connection_limit = config[key_concurrent_connection_limit]
       conn = aiohttp.TCPConnector(limit_per_host=concurrent_connection_limit)
@@ -53,7 +55,7 @@ async def main():
       session = aiohttp.ClientSession(connector=conn, headers=session_headers)
 
       users = await get_group_users(session, config)
-      userlist_df = get_userlist_dataframe(users)
+      userlist_df = get_userlist_dataframe(snykgroup, users)
       userlist_df.to_csv(sys.stdout,index=False)
     
     except Exception as e:
@@ -82,12 +84,19 @@ def get_config():
         return config
 
     try:
-        snykgroup = os.getenv('SNYK_GROUP')
-        config[key_snykgroup] = snykgroup
+        try:
+            snykgroup = sys.argv[1]
+        except:
+            snykgroup = os.getenv('SNYK_GROUP')
     except:
-        config[key_config_status_msg] += "\nUnable to detect SNYK_GROUP from environment. Exiting."
+        config[key_config_status_msg] += "\nNo SNYK_GROUP specified. Exiting."
         return config
 
+    if snykgroup != "":
+        config[key_snykgroup] = snykgroup
+    else:
+        config[key_config_status_msg] += "\nNo SNYK_GROUP specified. Exiting."
+        return config
 
     # static config
     config[key_snyk_api] = "https://api.snyk.io/api/v1"
@@ -105,7 +114,8 @@ async def get_group_users(session,config):
     api_url = f"{snyk_api}/group/{snykgroup}/members"
     async with session.get(api_url) as resp:
         if resp.status != 200:
-            print(f"{org.id}: Error {resp.status}")
+            print(f"{snykgroup}: Error {resp.status}")
+            exit(1)
         users = await resp.json()
 
     # Service accounts don't have an email address, so add an indicator to the output
@@ -121,13 +131,13 @@ async def get_group_users(session,config):
 
 #######################################################################
 
-def get_userlist_dataframe(users):
-    userlist = ["email,username,id\n"]
+def get_userlist_dataframe(snykgroup, users):
+    userlist = ["group_id,user_email,user_name,user_id\n"]
     for user in users:
-        userlist.append(f"{user['email']},{user['username']},{user['id']}\n")
+        userlist.append(f"{snykgroup},{user['email']},{user['username']},{user['id']}\n")
         buffer = ''.join(userlist)
     df = pd.read_csv(StringIO(buffer),header=0,sep=",")
-    df.sort_values(by=['email'], inplace=True)
+    df.sort_values(by=['user_email'], inplace=True)
     return df      
 #######################################################################
 
