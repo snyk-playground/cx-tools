@@ -17,6 +17,11 @@ When running via `docker`:
 docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --org snyk-org-slug --snyk-token $SNYK_TOKEN
 ```
 
+To prevent failing your pipeline, you can add the `--nofail` option:
+```
+docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --org snyk-org-slug --snyk-token $SNYK_TOKEN --nofail
+
+
 You may instead use the following environment variables:
 
 * REMOTE_REPO_URL - the URL of the repository to retrieve Snyk project data for
