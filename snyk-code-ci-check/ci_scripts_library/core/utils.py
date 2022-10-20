@@ -48,12 +48,12 @@ def is_snyk_project_fresh(last_tested_date: str):
     total_time = (current_time - last_tested).total_seconds()
     #print(f"seconds since last_tested: {total_time=}")
 
-    if total_time < 3600:
+    if total_time < 600:
         return True
     else:
         return False
 
-def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org, gh_repo_full_name):
+def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org_id, gh_repo_full_name):
 
 #    print(f"{gh_repo_full_name=}")
     filter_for_snyk_projects = {  
@@ -63,11 +63,25 @@ def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org,
     }
 
     try:
-        snyk_client.v1_client.post(f"/org/{snyk_org.id}/projects", filter_for_snyk_projects)
-        projects:List[Project] = snyk_client.v1_client.post(f"/org/{snyk_org.id}/projects", filter_for_snyk_projects).json()
+        snyk_client.v1_client.post(f"/org/{snyk_org_id}/projects", filter_for_snyk_projects)
+        projects:List[Project] = snyk_client.v1_client.post(f"/org/{snyk_org_id}/projects", filter_for_snyk_projects).json()
 
         projects = [x for x in projects['projects'] if x['name'] == gh_repo_full_name]
         return projects
     except:
         return None
 
+def get_snyk_org_id(snyk_client:SuperSnykClient, org_slug: str, org_id: str):
+    org = None
+
+    if org_id:
+        org = org_id
+    elif org_slug:
+        try:
+            org = get_snyk_org_from_slug(snyk_client, org_slug).id
+        except:
+            org = None
+    else:
+        org = None
+
+    return org

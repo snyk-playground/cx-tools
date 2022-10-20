@@ -32,8 +32,3 @@ You may instead use the following environment variables:
 This example uses [typer](https://typer.tiangolo.com/) for CLI interactions
 
 This example's dependencies are managed with [Poetry](https://python-poetry.org/).
-
-
-TODO:
-* Allow users to specify the Snyk org by ID rather than org slug
-

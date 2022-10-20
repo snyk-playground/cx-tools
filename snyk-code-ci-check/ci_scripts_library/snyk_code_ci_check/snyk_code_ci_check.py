@@ -13,11 +13,14 @@ from ci_scripts_library.core.utils import *
 from ci_scripts_library.core import SuperSnykClient
 from snyk.models import Project
 
-app = typer.Typer(add_completion=False)
-
 # globals
 g = {}
 g['scriptname'] = "snyk-code-ci-check"
+g['retry_delay'] = 180
+g['retries'] = 3
+
+app = typer.Typer(add_completion=False)
+
 
 # This function defines the test failure conditions
 def test_failed(issue_counts_by_severity):
@@ -31,10 +34,54 @@ def test_failed(issue_counts_by_severity):
     else:
         return False
 
-    return projects
-
 def log(message: string):
     typer.echo(f"{g['scriptname']}: {message}")
+
+def process_command_line( remote_repo_url: str,
+                            snyk_token: str,
+                            org_slug: str,
+                            org_id: str,
+                            nofail: bool
+                            ):
+
+    config = {}
+
+    if remote_repo_url is None:
+        log("Remote repo URL not specified. Aborting.")
+        raise typer.Exit(2)
+    else:
+        config['repo_full_name'] = get_repo_full_name_from_repo_url(remote_repo_url)
+
+    ## Warn for conflicting options
+    if (org_slug and org_id):
+        log("warning: both `--org-slug` and `--org-id` specified. `--org-slug` will be ignored.")
+
+    ## Check for Snyk token and initialize the Snyk Client ##
+    if snyk_token is None:
+        log("Snyk token not specified. Aborting.")
+        raise typer.Exit(2)
+    else:
+        config['snyk_token'] = snyk_token
+
+    try:
+        config['snyk_client'] = SuperSnykClient(config['snyk_token'])
+        # log("Snyk client created successfully")
+    except:
+        log("Unable to initialize Snyk client. Aborting.")
+        raise type.Exit(3)
+
+    ## Resolve the Snyk org id
+    snyk_org = get_snyk_org_id(config['snyk_client'], org_slug, org_id)
+    if snyk_org:
+        config['snyk_org'] = snyk_org
+    else:
+        log("Invalid/inaccessible Snyk organization specified. Aborting.")
+        raise typer.Exit(2)
+    
+    config['nofail'] = nofail
+
+    return config
+
 
 @app.command()
 def main(ctx: typer.Context,
@@ -51,7 +98,12 @@ def main(ctx: typer.Context,
     org_slug: str = typer.Option(
         None,
         envvar="SNYK_ORG_SLUG",
-        help="Snyk organization to search for projects"
+        help="URL slug for Snyk organization to lookup project"
+    ),
+    org_id: str = typer.Option(
+        None,
+        envvar="SNYK_ORG_ID",
+        help="UUID for Snyk organization to lookup project"
     ),
     nofail: bool = typer.Option(
         False,
@@ -62,69 +114,54 @@ def main(ctx: typer.Context,
     Check for vulnerable Snyk Code projects for the specified repository
     """
     
-    if remote_repo_url is None:
-        log("Remote repo URL not specified. Aborting.")
-        raise typer.Exit(code=2)
-    else:
-        g['repo_full_name'] = get_repo_full_name_from_repo_url(remote_repo_url)
+    global g
+    g = g | process_command_line(remote_repo_url, snyk_token, org_slug, org_id, nofail)
 
-    if snyk_token is None:
-        log("Snyk token not specified. Aborting.")
-        raise typer.Exit(code=3)
-    else:
-        g['snyk_token'] = snyk_token
-
-    if org_slug is None:
-        log("Snyk org not specified. Arborting.")
-        raise typer.Exit(code=4)
-    else:
-        g['snyk_org_slug'] = org_slug
-    
-    g['nofail'] = nofail
-
-    #log(f"{remote_repo_url=}")
-    #log(f"{g['repo_full_name']=}")
-
-    try:
-        g['snyk_client'] = SuperSnykClient(g['snyk_token'])
-        # log("Snyk client created successfully")
-    except:
-        log("Unable to initialize Snyk client. Aborting.")
-        raise type.Exit(5)
-    
     log(f"Checking Snyk Code for projects from {g['repo_full_name']} ...")
 
-    g['snyk_org'] = get_snyk_org_from_slug(g['snyk_client'], g['snyk_org_slug'])
-
-    if g['snyk_org'] is not None:
+    has_current_test_results = False
+    retries_remaining = g['retries']
+    delay = g['retry_delay']
+    while (not has_current_test_results and retries_remaining > 0):
         projects = get_snyk_code_project_for_repo_target(g['snyk_client'], g['snyk_org'], g['repo_full_name'])
-        if projects:
-            project = projects[0]
 
-            if not is_snyk_project_fresh(project['lastTestedDate']):
-                log(f"Failing Snyk Check: project last tested {project['lastTestedDate']}")
-                raise typer.Exit(5)
+        if projects is None:
+            log(f"Unable to retrieve vulnerability data for the '{g['snyk_org']}' Snyk organization. Aborting")
+            raise typer.Exit(5)
 
-            #print (project['issueCountsBySeverity'])
-            try:
-                json_output_filename = f"/project/snyk_code_ci_check-{project['id']}.json"
-                with open(json_output_filename, "w") as jsonout:
-                        json.dump(project['issueCountsBySeverity'], jsonout, indent=2)
-            except:
-                log(f"Warning: unable to write Snyk vulnerability data to {json_output_filename}")
-            if (not g['nofail']):
-                if test_failed(project['issueCountsBySeverity']):
-                    log(f"Failing Snyk Check: {project['issueCountsBySeverity']['critical']} critical vulnerabilities, {project['issueCountsBySeverity']['high']} high severity vulnerabilities")
-                    raise typer.Exit(1)
-                else:
-                    log(f"No critical or high severity vulnerabilities found.")
-            else:
-                log(f"nofail specified. Skipping Snyk Check.")
-        else:
-            log(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']}' Snyk organization. Aborting")
-    else:
-        log(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']}' Snyk organization. Aborting")
+        project = projects[0] # At present, by definition there can be only one Code Analysis project per repo
+
+        has_current_test_results = is_snyk_project_fresh(project['lastTestedDate'])
+
+        if (not has_current_test_results):
+            log(f"Unable to complete check: Snyk Code test results not current")
+            log(f"Sleeping {delay} seconds before retrying ({retries_remaining} retries remaining)")
+            time.sleep(delay)
+            retries_remaining -= 1
+
+    if (not has_current_test_results):
+        log(f"Failing Snyk Check: project last tested {project['lastTestedDate']}")
         raise typer.Exit(5)
+
+    #print (project['issueCountsBySeverity'])
+
+    # Write the issues counts to JSON output
+    try:
+        json_output_filename = f"/project/snyk_code_ci_check-{project['id']}.json"
+        with open(json_output_filename, "w") as jsonout:
+                json.dump(project['issueCountsBySeverity'], jsonout, indent=2)
+    except:
+        log(f"Warning: unable to write Snyk vulnerability data to {json_output_filename}")
+
+    # Perform the issue check (unless nofail specified)
+    if (not g['nofail']):
+        if test_failed(project['issueCountsBySeverity']):
+            log(f"Failing Snyk Check: {project['issueCountsBySeverity']['critical']} critical vulnerabilities, {project['issueCountsBySeverity']['high']} high severity vulnerabilities")
+            raise typer.Exit(1)
+        else:
+            log(f"No critical or high severity vulnerabilities found.")
+    else:
+        log(f"nofail specified. Skipping Snyk Check.")
 
     # test passed, exit(0)    
     return
