@@ -42,6 +42,7 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to list all issues for a snyk org](scripts/list-all-issues-for-a-snyk-org.md)
 - [How to get projects snapshots](scripts/retrieve-projects-snapshots.md)
 - [How to tag snyk projects](scripts/tag-snyk-projects.md)
+- [How to generate a list (CSV) of all user and service accounts in a group](userlist)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
 # Guides
@@ -50,8 +51,9 @@ In the folder [webhook-examples](./webhook-examples/README.md) we provide some g
 - <img src="./webhook-examples/microsoft-teams-logo.png" width="50"> [Microsoft Teams](./webhook-examples/azure-function-microsoft-teams.cs)
 - <img src="./webhook-examples/newrelic-logo.png" width="50"> [New Relic Events](./webhook-examples/azure-function-newrelic.cs)
 - <img src="./webhook-examples/datadog-logo.png" width="50"> [DataDog](./webhook-examples/azure-function-datadog.cs)
-- <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk](./webhook-examples/azure-function-splunk.cs)
-
+- <img src="./webhook-examples/slack-logo.png" width="50"> [Slack](https://docs.snyk.io/snyk-api-info/snyk-webhooks/using-snyk-webhooks-to-connect-snyk-to-slack-with-aws-lambda)
+- <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk Observability Cloud](./webhook-examples/azure-function-splunk.cs)
+- <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk Cloud HTTP-Event-Collector (HEC)](./Snyk-to-Splunk-HTTP-Event-Collector/)
 
 # Customers Shared Scripts
 - [Citrix - BitBucket sync to Snyk](BB-to-snyk/bitbucketToSnyk-share.py)
