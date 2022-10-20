@@ -42,6 +42,7 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to list all issues for a snyk org](scripts/list-all-issues-for-a-snyk-org.md)
 - [How to get projects snapshots](scripts/retrieve-projects-snapshots.md)
 - [How to tag snyk projects](scripts/tag-snyk-projects.md)
+- [How to generate a list (CSV) of all user and service accounts in a group](userlist)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
 # Guides
