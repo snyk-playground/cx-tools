@@ -8,7 +8,6 @@ In this example, the failure conditions are "any critical or high severity vulne
 
 Vulnerability data is written to `snyk_code_ci_check-<snyk_project_id>.json` in the directory you mount to `/project` when running the container
 
-```
 ### Usage
 
 When running via `docker`:
