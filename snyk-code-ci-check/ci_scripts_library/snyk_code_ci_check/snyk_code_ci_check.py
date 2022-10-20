@@ -16,7 +16,7 @@ from snyk.models import Project
 # globals
 g = {}
 g['scriptname'] = "snyk-code-ci-check"
-g['retry_delay'] = 180
+g['retry_delay'] = 180 # 3 minutes
 g['retries'] = 3
 
 app = typer.Typer(add_completion=False)
@@ -107,6 +107,7 @@ def main(ctx: typer.Context,
     ),
     nofail: bool = typer.Option(
         False,
+        envvar="SNYK_CODE_CI_CHECK_NOFAIL",
         help="If set, don't perform the Snyk Check. Only the project output will be saved"
     )
 ):
@@ -150,6 +151,10 @@ def main(ctx: typer.Context,
         json_output_filename = f"/project/snyk_code_ci_check-{project['id']}.json"
         with open(json_output_filename, "w") as jsonout:
                 json.dump(project['issueCountsBySeverity'], jsonout, indent=2)
+                jsonout.write("\n")
+                
+        log(f"Vulnerability counts (by severity) saved to {json_output_filename}")
+    
     except:
         log(f"Warning: unable to write Snyk vulnerability data to {json_output_filename}")
 
@@ -161,7 +166,7 @@ def main(ctx: typer.Context,
         else:
             log(f"No critical or high severity vulnerabilities found.")
     else:
-        log(f"nofail specified. Skipping Snyk Check.")
+        log(f"NOFAIL specified. Skipping Snyk Check.")
 
     # test passed, exit(0)    
     return

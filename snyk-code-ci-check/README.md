@@ -20,14 +20,32 @@ docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-u
 To prevent failing your pipeline, you can add the `--nofail` option:
 ```
 docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --org snyk-org-slug --snyk-token $SNYK_TOKEN --nofail
+```
 
-
-You may instead use the following environment variables:
+Alternatively, you may specify options via the following environment variables:
 
 * REMOTE_REPO_URL - the URL of the repository to retrieve Snyk project data for
 * SNYK_ORG_SLUG - the org slug of the Snyk organization in which the project data can be found
 * SNYK_TOKEN - a valid Snyk API token for the specified Snyk organization
+* SNYK_CODE_CI_CHECK_NOFAIL - set to "True" to prevent the check from failing a pipeline
 
+## Bitbucket Pipelines example
+
+```
+pipelines:
+  default:
+    - step:
+        name: 'Build'
+        script:
+          - npm ci
+    - step:
+        name: 'Snyk Code CI Check'
+        image: snyk-code-ci-check:latest
+        script:
+          - python /app/ci_scripts_library/snyk_code_ci_check/snyk_code_ci_check.py
+ ```
+
+### Acknowledgements
 
 This example uses [typer](https://typer.tiangolo.com/) for CLI interactions
 
