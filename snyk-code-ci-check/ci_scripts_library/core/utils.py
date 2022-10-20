@@ -48,7 +48,7 @@ def is_snyk_project_fresh(last_tested_date: str):
     total_time = (current_time - last_tested).total_seconds()
     #print(f"seconds since last_tested: {total_time=}")
 
-    if total_time < 180:
+    if total_time < 3600:
         return True
     else:
         return False

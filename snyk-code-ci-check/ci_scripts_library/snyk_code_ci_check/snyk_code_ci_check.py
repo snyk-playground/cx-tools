@@ -17,6 +17,7 @@ app = typer.Typer(add_completion=False)
 # globals
 g = {}
 
+# This function defines the test failure conditions
 def test_failed(issue_counts_by_severity):
     num_critsev_issues = issue_counts_by_severity['critical']
     num_highsev_issues = issue_counts_by_severity['high']
@@ -46,6 +47,10 @@ def main(ctx: typer.Context,
         None,
         envvar="SNYK_ORG_SLUG",
         help="Snyk organization to search for projects"
+    ),
+    nofail: bool = typer.Argument(
+        False,
+        help="If set, don't perform the Snyk Check. Only the project output will be saved"
     )
 ):
     """
@@ -70,6 +75,8 @@ def main(ctx: typer.Context,
     else:
         g['snyk_org_slug'] = org_slug
     
+    g['nofail'] = nofail
+
     #typer.echo(f"{remote_repo_url=}")
     #typer.echo(f"{g['repo_full_name']=}")
 
@@ -88,18 +95,27 @@ def main(ctx: typer.Context,
         projects = get_snyk_code_project_for_repo_target(g['snyk_client'], g['snyk_org'], g['repo_full_name'])
         if projects:
             project = projects[0]
+
+            if not is_snyk_project_fresh(project['lastTestedDate']):
+                typer.echo(f"Failing Snyk Check: project last tested {project['lastTestedDate']}")
+                raise typer.Exit(5)
+
             #print (project['issueCountsBySeverity'])
-            if test_failed(project['issueCountsBySeverity']):
-                typer.echo(f"Failing Snyk Check: {project['issueCountsBySeverity']['critical']} critical vulnerabilities, {project['issueCountsBySeverity']['high']} high severity vulnerabilities")
-                with open(f"/project/snyk_code_ci_check-{project['id']}.json", "w") as jsonout:
+            try:
+                json_output_filename = f"/project/snyk_code_ci_check-{project['id']}.json"
+                with open(json_output_filename, "w") as jsonout:
                         json.dump(project['issueCountsBySeverity'], jsonout, indent=2)
+            except:
+                typer.echo(f"Warning: unable to write Snyk vulnerability data to {json_output_filename}")
+            if ((not g['nofail']) and test_failed(project['issueCountsBySeverity'])):
+                typer.echo(f"Failing Snyk Check: {project['issueCountsBySeverity']['critical']} critical vulnerabilities, {project['issueCountsBySeverity']['high']} high severity vulnerabilities")
                 raise typer.Exit(1)
             else:
                 typer.echo(f"No critical or high severity vulnerabilities found")
         else:
-            typer.echo(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']} Snyk organization. Aborting")
+            typer.echo(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']}' Snyk organization. Aborting")
     else:
-        typer.echo(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']} Snyk organization. Aborting")
+        typer.echo(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']}' Snyk organization. Aborting")
         raise typer.Exit(5)
 
     # test passed, exit(0)    

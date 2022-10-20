@@ -22,7 +22,7 @@ class SuperSnykClient(object):
         v1_url: str = V1_API_URL,
         v3_url: str = V3_API_URL,
         v3_version: str = V3_VERSION,
-        tries: int = 2,
+        tries: int = 3,
         delay: int = 3,
         backoff: int = 2
     ):
