@@ -44,6 +44,12 @@ pipelines:
           - python /app/ci_scripts_library/snyk_code_ci_check/snyk_code_ci_check.py
  ```
 
+### Building the container
+
+```
+docker build -t accountname/snyk-code-ci-check:latest .
+```
+
 ### Acknowledgements
 
 This example uses [typer](https://typer.tiangolo.com/) for CLI interactions
