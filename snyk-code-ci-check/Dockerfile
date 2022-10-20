@@ -20,7 +20,7 @@ FROM python:3.9-slim AS runtime
 
 ENV PYTHONPATH /app
 # cannot use WORKDIR with github action containers
-RUN mkdir /app
+RUN mkdir /app && mkdir /project
 
 # copy stuff from this repo into the /app directory of the container
 COPY ci_scripts_library /app/ci_scripts_library

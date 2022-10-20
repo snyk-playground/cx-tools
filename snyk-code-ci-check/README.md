@@ -6,13 +6,15 @@ This example illustrates how to use the Snyk API to query project test results f
 
 In this example, the failure conditions are "any critical or high severity vulnerabilities in the project"
 
+Vulnerability data is written to `snyk_code_ci_check-<snyk_project_id>.json` in the directory you mount to `/project` when running the container
+
 ```
 ### Usage
 
 When running via `docker`:
 
 ```
-docker run -it --rm snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --org snyk-org-slug --snyk-token $SNYK_TOKEN
+docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --org snyk-org-slug --snyk-token $SNYK_TOKEN
 ```
 
 You may instead use the following environment variables:
@@ -29,6 +31,4 @@ This example's dependencies are managed with [Poetry](https://python-poetry.org/
 
 TODO:
 * Allow users to specify the Snyk org by ID rather than org slug
-* Write vulnerability output to a file
-* Add global exception handling
 

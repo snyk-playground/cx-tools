@@ -28,20 +28,6 @@ def test_failed(issue_counts_by_severity):
     else:
         return False
 
-def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org, gh_repo_full_name):
-
-#    print(f"{gh_repo_full_name=}")
-    filter_for_snyk_projects = {  
-        "filters": {
-           "type": "sast",
-        }
-    }
-#    typer.echo(f"org: {snyk_org.id}")
-    snyk_client.v1_client.post(f"/org/{snyk_org.id}/projects", filter_for_snyk_projects)
-    projects:List[Project] = snyk_client.v1_client.post(f"/org/{snyk_org.id}/projects", filter_for_snyk_projects).json()
-
-    projects = [x for x in projects['projects'] if x['name'] == gh_repo_full_name]
-
     return projects
 
 @app.command()
@@ -87,20 +73,36 @@ def main(ctx: typer.Context,
     #typer.echo(f"{remote_repo_url=}")
     #typer.echo(f"{g['repo_full_name']=}")
 
-    g['snyk_client'] = SuperSnykClient(g['snyk_token'])
-    # typer.echo("Snyk client created successfully")
-
+    try:
+        g['snyk_client'] = SuperSnykClient(g['snyk_token'])
+        # typer.echo("Snyk client created successfully")
+    except:
+        typer.echo("Unable to initialize Snyk client. Aborting.")
+        raise type.Exit(5)
+    
     typer.echo(f"Checking Snyk Code for projects from {g['repo_full_name']} ...")
 
     g['snyk_org'] = get_snyk_org_from_slug(g['snyk_client'], g['snyk_org_slug'])
 
-    projects = get_snyk_code_project_for_repo_target(g['snyk_client'], g['snyk_org'], g['repo_full_name'])
-    project = projects[0]
-    print (project['issueCountsBySeverity'])
+    if g['snyk_org'] is not None:
+        projects = get_snyk_code_project_for_repo_target(g['snyk_client'], g['snyk_org'], g['repo_full_name'])
+        if projects:
+            project = projects[0]
+            #print (project['issueCountsBySeverity'])
+            if test_failed(project['issueCountsBySeverity']):
+                typer.echo(f"Failing Snyk Check: {project['issueCountsBySeverity']['critical']} critical vulnerabilities, {project['issueCountsBySeverity']['high']} high severity vulnerabilities")
+                with open(f"/project/snyk_code_ci_check-{project['id']}.json", "w") as jsonout:
+                        json.dump(project['issueCountsBySeverity'], jsonout, indent=2)
+                raise typer.Exit(1)
+            else:
+                typer.echo(f"No critical or high severity vulnerabilities found")
+        else:
+            typer.echo(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']} Snyk organization. Aborting")
+    else:
+        typer.echo(f"Unable to retrieve vulnerability data for the '{g['snyk_org_slug']} Snyk organization. Aborting")
+        raise typer.Exit(5)
 
-    if test_failed(project['issueCountsBySeverity']):
-        raise typer.Exit(1)
-    
+    # test passed, exit(0)    
     return
 
             
