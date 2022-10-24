@@ -53,7 +53,7 @@ def is_snyk_project_fresh(last_tested_date: str):
     else:
         return False
 
-def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org_id, gh_repo_full_name):
+def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org_id, repo_full_name, branch):
 
 #    print(f"{gh_repo_full_name=}")
     filter_for_snyk_projects = {  
@@ -66,7 +66,10 @@ def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org_
         snyk_client.v1_client.post(f"/org/{snyk_org_id}/projects", filter_for_snyk_projects)
         projects:List[Project] = snyk_client.v1_client.post(f"/org/{snyk_org_id}/projects", filter_for_snyk_projects).json()
 
-        projects = [x for x in projects['projects'] if x['name'] == gh_repo_full_name]
+        projects = [x for x in projects['projects'] if repo_full_name in x['name']]
+        if branch:
+            projects = [x for x in projects if branch == x['branch']]
+
         return projects
     except:
         return None

@@ -38,6 +38,7 @@ def log(message: string):
     typer.echo(f"{g['scriptname']}: {message}")
 
 def process_command_line( remote_repo_url: str,
+                            remote_repo_branch: str,
                             snyk_token: str,
                             org_slug: str,
                             org_id: str,
@@ -51,6 +52,12 @@ def process_command_line( remote_repo_url: str,
         raise typer.Exit(2)
     else:
         config['repo_full_name'] = get_repo_full_name_from_repo_url(remote_repo_url)
+
+    if remote_repo_branch is None:
+        log("Branch not specified. Aborting")
+        raise typer.Exit(2)
+    else:
+        config['repo_branch'] = remote_repo_branch
 
     ## Warn for conflicting options
     if (org_slug and org_id):
@@ -90,6 +97,11 @@ def main(ctx: typer.Context,
         envvar="REMOTE_REPO_URL",
         help="git url, e.g. https://github.com/owner/repo.git"
     ),
+    remote_repo_branch: str = typer.Option(
+        None,
+        envvar="REMOTE_REPO_BRANCH",
+        help="git branch, e.g. main"
+    ),
     snyk_token: str = typer.Option(
         None,
         envvar="SNYK_TOKEN",
@@ -116,21 +128,25 @@ def main(ctx: typer.Context,
     """
     
     global g
-    g = g | process_command_line(remote_repo_url, snyk_token, org_slug, org_id, nofail)
+    g = g | process_command_line(remote_repo_url, remote_repo_branch, snyk_token, org_slug, org_id, nofail)
 
-    log(f"Checking Snyk Code for projects from {g['repo_full_name']} ...")
+    log(f"Checking Snyk Code for projects from {g['repo_full_name']}({g['repo_branch']}) ...")
 
     has_current_test_results = False
     retries_remaining = g['retries']
     delay = g['retry_delay']
     while (not has_current_test_results and retries_remaining > 0):
-        projects = get_snyk_code_project_for_repo_target(g['snyk_client'], g['snyk_org'], g['repo_full_name'])
+        projects = get_snyk_code_project_for_repo_target(g['snyk_client'], g['snyk_org'], g['repo_full_name'], g['repo_branch'])
 
         if projects is None:
             log(f"Unable to retrieve vulnerability data for the '{g['snyk_org']}' Snyk organization. Aborting")
             raise typer.Exit(5)
 
-        project = projects[0] # At present, by definition there can be only one Code Analysis project per repo
+        if len(projects) == 0:
+            log(f"No vulnerability data found for {g['repo_full_name']}({g['repo_branch']}) in Snyk organization {g['snyk_org']}")
+            raise typer.Exit(5)
+        else:
+            project = projects[0] # At present, by definition there can be only one Code Analysis project per repo
 
         has_current_test_results = is_snyk_project_fresh(project['lastTestedDate'])
 

@@ -13,18 +13,20 @@ Vulnerability data is written to `snyk_code_ci_check-<snyk_project_id>.json` in 
 When running via `docker`:
 
 ```
-docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --org snyk-org-slug --snyk-token $SNYK_TOKEN
+docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --branch main --org snyk-org-slug --snyk-token $SNYK_TOKEN
 ```
 
 To prevent failing your pipeline, you can add the `--nofail` option:
 ```
-docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --org snyk-org-slug --snyk-token $SNYK_TOKEN --nofail
+docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --branch main --org snyk-org-slug --snyk-token $SNYK_TOKEN --nofail
 ```
 
 Alternatively, you may specify options via the following environment variables:
 
 * REMOTE_REPO_URL - the URL of the repository to retrieve Snyk project data for
-* SNYK_ORG_SLUG - the org slug of the Snyk organization in which the project data can be found
+* REMOTE_REPO_BRANCH - the branch of the project being monitored in Snyk
+* SNYK_ORG_SLUG - the org slug of the Snyk organization in which the project data can be found. Ignored if SNYK_ORG_ID is specified (--snyk-org-id)
+* SNYK_ORG_ID - the UUID of the Snyk organization in which the project data can be found
 * SNYK_TOKEN - a valid Snyk API token for the specified Snyk organization
 * SNYK_CODE_CI_CHECK_NOFAIL - set to "True" to prevent the check from failing a pipeline
 
