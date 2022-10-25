@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 from xxlimited import Str
 from snyk.errors import SnykError, SnykNotFoundError
 
-#from ci_scripts_library.core.super_snyk_client import SuperSnykClient
 
 class Manager(abc.ABC):
     def __init__(self, klass, client, instance=None):

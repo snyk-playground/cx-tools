@@ -5,8 +5,8 @@ V1 and REST(V3) Snyk APIs.
 
 from snyk import SnykClient
 from snyk.managers import Manager as V1Manager
-from ci_scripts_library.core.snyk_managers import Manager as V3Manager
-from ci_scripts_library.core.snyk_models import Organization, Project, Target
+from .snyk_managers import Manager as V3Manager
+from .snyk_models import Organization, Project, Target
 
 class SuperSnykClient(object):
 

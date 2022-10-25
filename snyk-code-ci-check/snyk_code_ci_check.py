@@ -1,17 +1,15 @@
 from operator import truediv
+import json
 import string
 import typer
 import os
 import sys
 import time
 
-sys.path.append("../../ci_scripts_library")
 
-from ci_scripts_library.core.utils import *
-
-from ci_scripts_library.core.utils import *
-from ci_scripts_library.core import SuperSnykClient
-from snyk.models import Project
+from lib.super_snyk_client import SuperSnykClient
+from lib.snyk_models import Project
+from lib.utils import *
 
 # globals
 g = {}

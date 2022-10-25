@@ -23,7 +23,8 @@ ENV PYTHONPATH /app
 RUN mkdir /app && mkdir /project
 
 # copy stuff from this repo into the /app directory of the container
-COPY ci_scripts_library /app/ci_scripts_library
+COPY lib /app/lib
+COPY snyk_code_ci_check.py /app
 
 # now we use multistage containers to then copy the requirements from the other container
 COPY --from=requirements /src/requirements.txt .
@@ -32,6 +33,6 @@ COPY --from=requirements /src/requirements.txt .
 RUN python -m pip install --quiet -U pip
 RUN pip install -r requirements.txt
 
-COPY scripts/entrypoint.sh /usr/local/bin/
+COPY docker/entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["bash", "/usr/local/bin/entrypoint.sh"]

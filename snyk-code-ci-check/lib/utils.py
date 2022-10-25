@@ -1,14 +1,10 @@
 # utilities
-import json
 import re
-import time
 
-from typing import Dict, List
+from typing import Dict
 from datetime import datetime
-from ci_scripts_library.core import SuperSnykClient
-from ci_scripts_library.core.snyk_models import ProjectIssues
-from snyk.models import Project, AggregatedIssue
-import pprint
+from .super_snyk_client import SuperSnykClient
+from snyk.models import Project
 
 def get_repo_full_name_from_repo_url(repo_url:str) -> str:
     repo_name = None
@@ -55,7 +51,6 @@ def is_snyk_project_fresh(last_tested_date: str):
 
 def get_snyk_code_project_for_repo_target(snyk_client:SuperSnykClient, snyk_org_id, repo_full_name, branch):
 
-#    print(f"{gh_repo_full_name=}")
     filter_for_snyk_projects = {  
         "filters": {
            "type": "sast",

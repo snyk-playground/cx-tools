@@ -49,7 +49,7 @@ pipelines:
 ### Building the container
 
 ```
-docker build -t accountname/snyk-code-ci-check:latest .
+docker build --file=docker/Dockerfile -t accountname/snyk-code-ci-check:latest .
 ```
 
 ### Acknowledgements
