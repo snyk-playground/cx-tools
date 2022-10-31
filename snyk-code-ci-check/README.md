@@ -13,12 +13,12 @@ Vulnerability data is written to `snyk_code_ci_check-<snyk_project_id>.json` in 
 When running via `docker`:
 
 ```
-docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --branch main --org snyk-org-slug --snyk-token $SNYK_TOKEN
+docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --remote-repo-branch main --org-slug snyk-org-slug --snyk-token $SNYK_TOKEN
 ```
 
 To prevent failing your pipeline, you can add the `--nofail` option:
 ```
-docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --branch main --org snyk-org-slug --snyk-token $SNYK_TOKEN --nofail
+docker run -it --rm -v ${PWD}:/project snyk-code-ci-check:latest --remote-repo-url https://github.com/juice-shop/juice-shop --remote-repo-branch main --org-slug snyk-org-slug --snyk-token $SNYK_TOKEN --nofail
 ```
 
 Alternatively, you may specify options via the following environment variables:
