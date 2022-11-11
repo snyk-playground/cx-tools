@@ -43,6 +43,7 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to get projects snapshots](scripts/retrieve-projects-snapshots.md)
 - [How to tag snyk projects](scripts/tag-snyk-projects.md)
 - [How to generate a list (CSV) of all user and service accounts in a group](userlist)
+- [How to run Broker on AWS ECS](https://github.com/snyk-playground/terraform-aws-snykbroker)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
 # Guides
