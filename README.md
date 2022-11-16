@@ -46,6 +46,9 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 
 # Guides
+
+### Webhook Examples
+
 In the folder [webhook-examples](./webhook-examples/README.md) we provide some guides on how to use Snyk webhooks to forward Snyk vulnerability data to other systems. These examples include the following:
 - <img src="./webhook-examples/azure-devops-boards-logo.png" width="50"> [Azure DevOps Boards](./webhook-examples/azure-function-azure-boards.cs)
 - <img src="./webhook-examples/microsoft-teams-logo.png" width="50"> [Microsoft Teams](./webhook-examples/azure-function-microsoft-teams.cs)
@@ -54,6 +57,10 @@ In the folder [webhook-examples](./webhook-examples/README.md) we provide some g
 - <img src="./webhook-examples/slack-logo.png" width="50"> [Slack](https://docs.snyk.io/snyk-api-info/snyk-webhooks/using-snyk-webhooks-to-connect-snyk-to-slack-with-aws-lambda)
 - <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk Observability Cloud](./webhook-examples/azure-function-splunk.cs)
 - <img src="./webhook-examples/splunk-logo.png" width="50"> [Splunk Cloud HTTP-Event-Collector (HEC)](./Snyk-to-Splunk-HTTP-Event-Collector/)
+
+### Broker Deployment Examples
+
+- [How to run Broker on AWS ECS](https://github.com/snyk-playground/terraform-aws-snykbroker)
 
 # Customers Shared Scripts
 - [Citrix - BitBucket sync to Snyk](BB-to-snyk/bitbucketToSnyk-share.py)
