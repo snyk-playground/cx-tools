@@ -20,6 +20,11 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
     //log.LogInformation("data: " + requestBody);
 
     string count = data.newIssues.Count.ToString();
+    string projectName = data.project.name;
+    log.LogInformation("Snyk project: " + projectName);
+    int idxRepoURLProject = projectName.IndexOf("/");
+    string AzureDevOpsProject = projectName.Substring(0, idxRepoURLProject);
+    log.LogInformation("Azure DevOps Project: " + AzureDevOpsProject);
     log.LogInformation("data.newIssues.Count: " + count);
     string responseMessage = "No new issues found. Nothing to process!";
 
@@ -28,7 +33,6 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
         log.LogInformation("New issues found!");
 
         name = name ?? data?.name;
-        string projectName = data.project.name;
         string browseUrl = data.project.browseUrl;
         int x = 0;
 
@@ -43,6 +47,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
             string id = data.newIssues[i].id.ToString();
             //log.LogInformation("data.newIssues[i].id:" + id);
             string descr = data.newIssues[i].issueData.description.ToString();
+            descr = descr.Replace("\"", "'");
             //log.LogInformation("data.newIssues[i].issueData.description:" + descr);
 
             sb.Append("  {");
@@ -71,14 +76,14 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
             var AZURE_DEVOPS_USER = Environment.GetEnvironmentVariable("AZURE_DEVOPS_USER");
             var AZURE_DEVOPS_PAT = Environment.GetEnvironmentVariable("AZURE_DEVOPS_PAT");
             var AZURE_DEVOPS_API_VERSION = Environment.GetEnvironmentVariable("AZURE_DEVOPS_API_VERSION");
-            var url = "https://dev.azure.com/" + AZURE_DEVOPS_ORG + "/" + AZURE_DEVOPS_PROJECT + "/_apis/wit/workitems/$Issue?api-version=" + AZURE_DEVOPS_API_VERSION;
+            var url = "https://dev.azure.com/" + AZURE_DEVOPS_ORG + "/" + AzureDevOpsProject + "/_apis/wit/workitems/$Issue?api-version=" + AZURE_DEVOPS_API_VERSION;
             using var client = new HttpClient();
             var authToken = Encoding.ASCII.GetBytes(AZURE_DEVOPS_USER + ":" + AZURE_DEVOPS_PAT);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
             var response = await client.PostAsync(url, content);
 
             string result = response.Content.ReadAsStringAsync().Result;
-            //log.LogInformation("response.StatusCode: " + response.StatusCode);
+            log.LogInformation("response.StatusCode: " + response.StatusCode);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 x++;
