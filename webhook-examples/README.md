@@ -28,12 +28,17 @@ This Azure Functions require the following environment variables to be set-up
 <img src="azure-devops-boards-logo.png" width="50">
 
 - AZURE_DEVOPS_ORG: the name of the Azure DevOps organisation
-- AZURE_DEVOPS_PROJECT: the Azure DevOps project to create work items for
+- AZURE_DEVOPS_PROJECT: (optional) the Azure DevOps project to create work items for, by default the code will map to the same project that it identified in Snyk
 - AZURE_DEVOPS_USER: the Azure DevOps user name
 - AZURE_DEVOPS_PAT: the Azure DevOps personall access token
 - AZURE_DEVOPS_API_VERSION: the Azure DevOps API version to use, e.g. "7.1-preview.3"
 
 For more information on how to create work items in Azure DevOps Boards, see this [docs page](https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/create?view=azure-devops-rest-7.1).
+
+This integration also supports the use case of specifying a specific Azure Boards project per Snyk organization. If you want to leverage this, then please speficy the below application settings:
+
+- AZURE_DEVOPS_SNYKORG_BOARDS_MAPPING: a JSON representation of the mapping for Snyk orgs to Azure Boards projects, format: [{"snykOrgId": "SNYK_ORG_ID", "azureBoardsProject": "AZURE_BOARDS_PROJECT_NAME"}]
+- AZURE_DEVOPS_SNYKORG_BOARDS_MAPPING_ENABLED: true/false, whether or not you want to leverage custom mapping
 
 ### 1.2. Microsoft Teams messages:
 <img src="microsoft-teams-logo.png" width="50">
