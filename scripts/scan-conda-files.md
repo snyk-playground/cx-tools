@@ -23,13 +23,6 @@ conda_sh = CONDA_HOME + '/etc/profile.d/conda.sh'
 snyk_test_args = list(DEFAULT_TEST_ARGS)
 snyk_monitor_args = list(DEFAULT_MONITOR_ARGS)
 
-if 'CONDA_HOME' in os.environ:
-    print("Conda home path is the following: " + CONDA_HOME)
-else:
-    print("Conda home path is not set.  Please set CONDA_HOME environment variable")
-    os._exit()
-
-
 def findenvname(file):
     infile = open(file, 'r')
     firstline = infile.readline()
