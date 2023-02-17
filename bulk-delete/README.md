@@ -12,7 +12,7 @@ Within the cloned repo run <pre><code>python3 snyk-bulk-delete.py (add flags her
 
 <pre><code>
 --help/-h : Returns this page \n--orgs/<br>
--o : A set of orgs upon which to perform delete (use ! for all orgs<br>
+-o : A set of orgs upon which to perform delete (use ! for all orgs)<br>
 --scatypes : Defines SCA type/s of projects to deletes<br>
 --products : Defines product/s types of projects to delete<br>
 --origins : Defines origin types of projects to delete<br>
