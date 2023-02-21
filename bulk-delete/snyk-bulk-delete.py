@@ -108,7 +108,7 @@ def main(argv):
                         spinner.fail("💥 ")
                         spinner.stop()    
                             #if org is empty and --delete-empty-org flag is on
-            if len(currOrg.projects.all()) == 0:
+            if len(currOrg.projects.all()) == 0 and deleteorgs:
                 spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is an empty organization".format(currOrg.name), color="yellow")
                 spinner.start()
                 try:
