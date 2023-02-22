@@ -18,11 +18,12 @@ def main(argv):
     products = []
     scaTypes = []
     origins = []
+    deleteorgs = False
     dryrun = False
     
     #valid input arguments
     try:
-        opts, args = getopt.getopt(argv, "ho:", ["help", "orgs=", "scatypes=", "products=", "origins=", "dryrun"] )
+        opts, args = getopt.getopt(argv, "ho:", ["help", "orgs=", "sca-types=", "products=", "origins=", "dry-run", "delete-empty-orgs"] )
     except getopt.GetoptError:
         print("Error parsing input, please check your syntax")
         sys.exit(2)
@@ -38,16 +39,18 @@ def main(argv):
                 inputOrgs = [org.name for org in userOrgs]
             else:
                 inputOrgs = arg.split()
-        if opt == '--scatypes':
+        if opt == '--sca-types':
             scaTypes = [scaType.lower() for scaType in arg.split()]
         if opt == '--products':
             products =[product.lower() for product in arg.split()]
         if opt == '--origins':
             origins =[origin.lower() for origin in arg.split()]
-        if opt == '--dryrun':
+        if opt == '--dry-run':
             dryrun = True
+        if opt == '--delete-empty-orgs':
+            deleteorgs = True
     
-    if len(scaTypes) == 0 and len(products) == 0 and len(origins) == 0:
+    if len(scaTypes) == 0 and len(products) == 0 and len(origins) == 0 and not deleteorgs:
         print(origins)
         print("No delete settings entered, exiting")
         print(helpString)
@@ -58,7 +61,7 @@ def main(argv):
         print(helpString)
     
     if dryrun:
-        print("\033[93m!!THIS IS A DRY RUN NO PROJECTS WILL BE DELETED!!\u001b[0m")
+        print("\033[93m!!THIS IS A DRY RUN NOTHING WILL BE DELETED!!\u001b[0m")
     #delete functionality
     for currOrg in userOrgs:
         if currOrg.name in inputOrgs:
@@ -92,6 +95,7 @@ def main(argv):
                             spinner.fail("💥 ")
                             spinner.stop()
                         spinner.stop()
+                #if origin matches user input
                 if currProject.origin in (origins):
                     spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is a \u001b[34m{}\u001b[0m project".format(currProject.name, currProject.origin), color="yellow")
                     spinner.start()
@@ -103,18 +107,28 @@ def main(argv):
                     except:
                         spinner.fail("💥 ")
                         spinner.stop()    
-
-        
+                            #if org is empty and --delete-empty-org flag is on
+            if len(currOrg.projects.all()) == 0 and deleteorgs:
+                spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is an empty organization".format(currOrg.name), color="yellow")
+                spinner.start()
+                try:
+                    if not dryrun:
+                        client.delete(f'org/{currOrg.id}')
+                    spinner.ok("✅ ")
+                    spinner.stop()
+                except:
+                    spinner.fail("💥 ")
+                    spinner.stop()    
+                    
      #process input orgs which didnt have a match
     if len(inputOrgs) != 0:
         print("\033[1;32m{}\u001b[0m are organizations which do not exist or you don't have access to them, please check your spelling and insure that spaces are replaced with dashes".format(inputOrgs))
                 
     if dryrun:
-        print("\033[93mDRY RUN COMPLETE NO PROJECTS DELETED")
+        print("\033[93mDRY RUN COMPLETE NOTHING DELETED")
 
 
                     
             
 main(sys.argv[1:])
-
 
