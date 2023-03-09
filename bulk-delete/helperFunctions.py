@@ -11,4 +11,4 @@ def convertTypeToProduct(inputType):
     elif inputType in codeTypes:
         return "code"
     else:
-        return "open source"
+        return "opensource"
