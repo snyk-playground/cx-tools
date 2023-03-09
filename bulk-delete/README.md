@@ -8,6 +8,8 @@ Clone this repo and run <pre><code>pip3 install -r requirements.txt</pre></code>
 
 <h2>How do I use this tool? </h2><br>
 
+Set your snyk token with <pre><code>export SNYK_TOKEN=TOKEN-GOES-HERE</code></pre><br>
+
 Within the cloned repo run <pre><code>python3 snyk-bulk-delete.py (add flags here)</code></pre><br> add the necessary flags listed below <br>
 
 <pre><code>
