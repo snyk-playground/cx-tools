@@ -125,7 +125,8 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                     string id = data.newIssues[i].id.ToString();
                     string issueType = data.newIssues[i].issueType;
                     string pkgName = data.newIssues[i].pkgName;
-                    int priorityScore = data.newIssues[i].priorityScore;
+                    int priorityScore = 0;
+                    int.TryParse(data.newIssues[i].priorityScore.ToString(), out priorityScore);
                     string title = data.newIssues[i].issueData.title;
                     string issueId = data.newIssues[i].issueData.id;
                     string issueVendorId = issueId;
@@ -147,7 +148,8 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                         descr = data.newIssues[i].issueData.description.ToString().Substring(0, 256);
                     }
                     descr = descr.Replace("\n", "").Replace("\r", "");
-                    bool remediationExists = data.newIssues[i].fixInfo.isFixable;
+                    bool remediationExists = false;
+                    bool.TryParse(data.newIssues[i].fixInfo.isFixable.ToString(), out remediationExists);
                     string remediationRecommendation = "";
                     if (remediationExists)
                     {
