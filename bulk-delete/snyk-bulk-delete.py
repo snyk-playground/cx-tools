@@ -42,6 +42,7 @@ def main(argv):
         if opt == '--sca-types':
             scaTypes = [scaType.lower() for scaType in arg.split()]
         if opt == '--products':
+            print(arg)
             products =[product.lower() for product in arg.split()]
         if opt == '--origins':
             origins =[origin.lower() for origin in arg.split()]
