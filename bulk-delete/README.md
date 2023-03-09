@@ -4,7 +4,7 @@ This tool allows you to delete projects in bulk within Snyk by specifying a set 
 
 <h2>Installation instructions</h2><br>
 
-Clone this repo and run <pre><code>pip -r requirements.txt</pre></code><br>
+Clone this repo and run <pre><code>pip3 install -r requirements.txt</pre></code><br>
 
 <h2>How do I use this tool? </h2><br>
 
