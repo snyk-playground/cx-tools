@@ -15,12 +15,12 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
 {
     log.LogInformation("C# HTTP trigger function processed a request.");
     string responseMessage = "No valid payload received!";
+    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
     try
     {
         string name = req.Query["name"];
 
-        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
         dynamic data = JsonConvert.DeserializeObject(requestBody);
         //log.LogInformation("data: " + requestBody);
 
@@ -125,7 +125,8 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                     string id = data.newIssues[i].id.ToString();
                     string issueType = data.newIssues[i].issueType;
                     string pkgName = data.newIssues[i].pkgName;
-                    int priorityScore = data.newIssues[i].priorityScore;
+                    int priorityScore = 0;
+                    int.TryParse(data.newIssues[i].priorityScore.ToString(), out priorityScore);
                     string title = data.newIssues[i].issueData.title;
                     string issueId = data.newIssues[i].issueData.id;
                     string issueVendorId = issueId;
@@ -137,7 +138,8 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                     {
                         issueId = data.newIssues[i].issueData.identifiers.CWE[0];
                     }
-                    double cvssScore = data.newIssues[i].issueData.cvssScore;
+                    double cvssScore = 0;
+                    double.TryParse(data.newIssues[i].issueData.cvssScore.ToString(), out cvssScore);
                     string severity = data.newIssues[i].issueData.severity.ToString().ToUpper();
                     string issueSeverity = data.newIssues[i].issueData.severity;
                     string descr = data.newIssues[i].issueData.description.ToString();
@@ -146,7 +148,8 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                         descr = data.newIssues[i].issueData.description.ToString().Substring(0, 256);
                     }
                     descr = descr.Replace("\n", "").Replace("\r", "");
-                    bool remediationExists = data.newIssues[i].fixInfo.isFixable;
+                    bool remediationExists = false;
+                    bool.TryParse(data.newIssues[i].fixInfo.isFixable.ToString(), out remediationExists);
                     string remediationRecommendation = "";
                     if (remediationExists)
                     {
@@ -161,8 +164,8 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                     sb.Append("{");
                     sb.Append("  \"artifactURL\": \"" + artifactURL + "\",");
                     sb.Append("  \"containerImage\": \"" + containerImage + "\",");
-                    sb.Append("  \"cvss.score\": \"" + cvssScore + "\",");
-                    sb.Append("  \"cvssScore\": \"" + cvssScore + "\",");
+                    sb.Append("  \"cvss.score\": " + cvssScore + ",");
+                    sb.Append("  \"cvssScore\": " + cvssScore + ",");
                     sb.Append("  \"disclosureUrl\": \"" + browseUrl + "\",");
                     sb.Append("  \"entityLookupValue\": \"" + entityLookupValue + "\",");
                     sb.Append("  \"entityType\": \"" + entityType + "\",");
@@ -202,7 +205,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
 
             if (payload != "{\"findings\":[]}")
             {
-                log.LogInformation("payload: " + payload);
+                //log.LogInformation("payload: " + payload);
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var NEW_RELIC_SECURITY_URL = Environment.GetEnvironmentVariable("NEW_RELIC_SECURITY_URL");
                 var NEW_RELIC_LICENSE_KEY = Environment.GetEnvironmentVariable("NEW_RELIC_LICENSE_KEY");
@@ -238,10 +241,12 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
     }
     catch (Exception ex)
     {
+        log.LogInformation("ex: " + ex);
         StringBuilder sb = new StringBuilder();
         sb.Append("{");
         sb.Append("  \"eventType\": \"SnykFindingsErrors\",");
-        sb.Append("  \"message\": \"" + ex.Message + "\"");
+        sb.Append("  \"message\": \"" + ex.Message + "\",");
+        sb.Append("  \"requestBody\": \"" + requestBody + "\"");
         sb.Append("}");
 
         var content = new StringContent(sb.ToString());
