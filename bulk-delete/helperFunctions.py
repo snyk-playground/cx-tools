@@ -9,6 +9,6 @@ def convertTypeToProduct(inputType):
     elif inputType in iacTypes:
         return "iac"
     elif inputType in codeTypes:
-        return "code"
+        return "sast"
     else:
         return "opensource"

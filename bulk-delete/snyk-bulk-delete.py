@@ -3,7 +3,7 @@ from yaspin import yaspin
 from helperFunctions import *
 import time
 
-helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactive projects, add this flag to delete \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
+helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactive projects, add this flag to delete \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
             '''
 
 #get all user orgs and verify snyk API token
@@ -38,7 +38,7 @@ def main(argv):
             sys.exit(2)
         if opt =='--orgs':
             if arg == "!":
-                inputOrgs = [org.name for org in userOrgs]
+                inputOrgs = [org.slug for org in userOrgs]
             else:
                 inputOrgs = arg.split()
         if opt == '--sca-types':
@@ -67,16 +67,16 @@ def main(argv):
     
     #print dryrun message
     if dryrun:
-        print("\033[93m!!THIS IS A DRY RUN NOTHING WILL BE DELETED!!\u001b[0m")
+        print("\033[93mTHIS IS A DRY RUN NOTHING, WILL BE DELETED! USE --FORCE TO APPLY ACTIONS\u001b[0m")
     
     #delete functionality
     for currOrg in userOrgs:
 
         #if curr org is in list of orgs to process
-        if currOrg.name in inputOrgs:
+        if currOrg.slug in inputOrgs:
 
             #remove currorg for org proccesing list and print proccesing message
-            inputOrgs.remove(currOrg.name)
+            inputOrgs.remove(currOrg.slug)
             print("Processing" + """ \033[1;32m"{}" """.format(currOrg.name) + "\u001b[0morganization")
 
             #cycle through all projects in current org and delete projects that match filter
@@ -87,6 +87,7 @@ def main(argv):
                 scaTypeMatch = False
                 originMatch = False
                 productMatch = False
+                isActive = currProject.isMonitored
 
                 #if scatypes are not declared or curr project type matches filter criteria then return true
                 if len(scaTypes) != 0:
@@ -111,7 +112,7 @@ def main(argv):
                     productMatch = True  
                 
                 #delete project if filter are meet
-                if scaTypeMatch and originMatch and productMatch:
+                if scaTypeMatch and originMatch and productMatch and isActive:
                     currProjectDetails = f"Origin: {currProject.origin}, Type: {currProject.type}, Product: {currProjectProductType}"
                     action =  "Deactivating" if deactivate else "Deleting"
                     spinner = yaspin(text=f"{action}\033[1;32m {currProject.name}", color="yellow")
@@ -141,7 +142,7 @@ def main(argv):
                     spinner.stop()                       
     #process input orgs which didnt have a match
     if len(inputOrgs) != 0:
-        print("\033[1;32m{}\u001b[0m are organizations which do not exist or you don't have access to them, please check your spelling and insure that spaces are replaced with dashes".format(inputOrgs))
+        print("\033[1;32m{}\u001b[0m are organizations which do not exist or you don't have access to them, please check your spelling, insure that spaces are replaced with dashes, and that you are using org slugs rather then display names".format(inputOrgs))
                 
     if dryrun:
         print("\033[93mDRY RUN COMPLETE NOTHING DELETED")
