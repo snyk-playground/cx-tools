@@ -15,10 +15,13 @@ Within the cloned repo run <pre><code>python3 snyk-bulk-delete.py (add flags her
 <pre><code>
 --help/-h : Returns this page \n--orgs/<br>
 -o : A set of orgs upon which to perform delete (use ! for all orgs)<br>
---scatypes : Defines SCA type/s of projects to deletes <br>
+--sca-types : Defines SCA type/s of projects to deletes <br>
 --products : Defines product/s types of projects to delete(opensource,container,iac,or sast)<br>
+--delete : By default this script will deactive projects, add this flag to delete<br>
+--force : By default this script will perform a dry run, add this flag to actually apply changes<br>
 --origins : Defines origin types of projects to delete<br>
---dryrun : Add this flag to perform a dry run of script which doesn't actually delete any projects<br>
+--dry-run : Add this flag to perform a dry run of script which doesn't actually delete any projects<br>
+--delete-empty-orgs : This will delete all orgs that do not have any projects in them<br>
  * Please replace spaces with dashes(-) when entering orgs <br>
  * If entering multiple values use the following format: "value-1 value-2 value-3"<br>
  * Types and origins are defined under this API > https://snyk.docs.apiary.io/#reference/projects/individual-project/retrieve-a-single-project
@@ -26,7 +29,7 @@ Within the cloned repo run <pre><code>python3 snyk-bulk-delete.py (add flags her
 
 Example where all npm and container projects are deleted within test org 1 and test org 2
 <br>
-<pre><code>python3 snyk-bulk-delete.py --orgs "test-org-1 test-org-2" --products container --scatypes npm
+<pre><code>python3 snyk-bulk-delete.py --orgs "test-org-1 test-org-2" --products container --sca-types "npm gradle"
 </code></pre>
 
 
