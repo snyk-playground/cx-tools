@@ -15,7 +15,7 @@ Within the cloned repo run <pre><code>python3 snyk-bulk-delete.py (add flags her
 PROJECTS ARE DE-ACTIVATED BY DEFAULT AND NO ACTIONS ARE APPLIED UNLESS --FORCE FLAG IS USED, SEE DETAILS BELOW<br>
 <pre><code>
 --help : Returns this page \n--orgs/<br>
--orgs : A set of orgs upon which to perform delete, be sure to use org slug instead of org display name (use ! for all orgs)<br>
+--orgs : A set of orgs upon which to perform delete, be sure to use org slug instead of org display name (use ! for all orgs)<br>
 --sca-types : Defines SCA type/s of projects to deletes <br>
 --products : Defines product/s types of projects to delete(opensource,container,iac,or sast)<br>
 --delete : By default this script will deactivate projects, add this flag to delete instead<br>
