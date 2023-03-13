@@ -1,10 +1,12 @@
 import sys, getopt, os, snyk
 from yaspin import yaspin
 from helperFunctions import *
+import time
 
-helpString ='''--help/-h : Returns this page \n--dryrun : Add this flag to perform a dry run of script which doesn't actually delete any projects \n--origins : Defines origin types of projects to delete\n--orgs/-o : A set of orgs upon which to perform delete (use * for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
+helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactive projects, add this flag to delete \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
             '''
 
+#get all user orgs and verify snyk API token
 userOrgs = []
 client = snyk.SnykClient(os.getenv("SNYK_TOKEN"))
 try:
@@ -19,24 +21,24 @@ def main(argv):
     scaTypes = []
     origins = []
     deleteorgs = False
-    dryrun = False
+    dryrun = True
+    deactivate = True
     
-    #valid input arguments
+    #valid input arguments declared here
     try:
-        opts, args = getopt.getopt(argv, "ho:", ["help", "orgs=", "sca-types=", "products=", "origins=", "dry-run", "delete-empty-orgs"] )
+        opts, args = getopt.getopt(argv, "hofd",["help", "orgs=", "sca-types=", "products=", "origins=", "force", "delete-empty-orgs", "delete"] )
     except getopt.GetoptError:
         print("Error parsing input, please check your syntax")
         sys.exit(2)
     
-
     #process input
     for opt, arg in opts:
-        if opt == '-h' or opt == '--help':
+        if opt == '--help':
             print(helpString)
             sys.exit(2)
-        if opt == '-o' or opt =='--orgs':
+        if opt =='--orgs':
             if arg == "!":
-                inputOrgs = [org.name for org in userOrgs]
+                inputOrgs = [org.slug for org in userOrgs]
             else:
                 inputOrgs = arg.split()
         if opt == '--sca-types':
@@ -46,69 +48,88 @@ def main(argv):
             products =[product.lower() for product in arg.split()]
         if opt == '--origins':
             origins =[origin.lower() for origin in arg.split()]
-        if opt == '--dry-run':
-            dryrun = True
         if opt == '--delete-empty-orgs':
             deleteorgs = True
-    
+        if opt =='--force':
+            dryrun = False
+        if opt =='--delete':
+            deactivate = False
+        
+    #error handling if no filters declared
     if len(scaTypes) == 0 and len(products) == 0 and len(origins) == 0 and not deleteorgs:
-        print(origins)
-        print("No delete settings entered, exiting")
+        print("No settings entered, exiting")
         print(helpString)
         sys.exit(2)
     
+    #error handling if no orgs declared
     if len(inputOrgs) == 0:
         print("No orgs to process entered, exiting")
         print(helpString)
     
+    #print dryrun message
     if dryrun:
-        print("\033[93m!!THIS IS A DRY RUN NOTHING WILL BE DELETED!!\u001b[0m")
+        print("\033[93mTHIS IS A DRY RUN NOTHING, WILL BE DELETED! USE --FORCE TO APPLY ACTIONS\u001b[0m")
+    
     #delete functionality
     for currOrg in userOrgs:
-        if currOrg.name in inputOrgs:
-            inputOrgs.remove(currOrg.name)
+
+        #if curr org is in list of orgs to process
+        if currOrg.slug in inputOrgs:
+
+            #remove currorg for org proccesing list and print proccesing message
+            inputOrgs.remove(currOrg.slug)
             print("Processing" + """ \033[1;32m"{}" """.format(currOrg.name) + "\u001b[0morganization")
+
+            #cycle through all projects in current org and delete projects that match filter
             for currProject in currOrg.projects.all():
-                #if sca type matches user input
-                if currProject.type in (scaTypes):
-                    spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is a \u001b[34m{}\u001b[0m project".format(currProject.name, currProject.type), color="yellow")
+
+
+                #variables which determine whether project matches criteria to delete, if criteria is empty they will be defined as true
+                scaTypeMatch = False
+                originMatch = False
+                productMatch = False
+                isActive = currProject.isMonitored
+
+                #if scatypes are not declared or curr project type matches filter criteria then return true
+                if len(scaTypes) != 0:
+                    if currProject.type in scaTypes:
+                        scaTypeMatch = True
+                else:
+                    scaTypeMatch = True
+
+                #if origintypes are not declared or curr project origin matches filter criteria then return true
+                if len(origins) != 0:
+                    if currProject.origin in origins:
+                        originMatch = True
+                else:
+                    originMatch = True
+
+                #if producttypes are not declared or curr project product matches filter criteria then return true
+                currProjectProductType = convertTypeToProduct(currProject.type)
+                if len(products) != 0:
+                    if currProjectProductType in products:
+                        productMatch = True
+                else:
+                    productMatch = True  
+                
+                #delete project if filter are meet
+                if scaTypeMatch and originMatch and productMatch and isActive:
+                    currProjectDetails = f"Origin: {currProject.origin}, Type: {currProject.type}, Product: {currProjectProductType}"
+                    action =  "Deactivating" if deactivate else "Deleting"
+                    spinner = yaspin(text=f"{action}\033[1;32m {currProject.name}", color="yellow")
+                    spinner.write(f"\u001b[0m    Processing project: \u001b[34m{currProjectDetails}\u001b[0m, Status Below👇")
                     spinner.start()
                     try:
                         if not dryrun:
-                            currProject.delete()
-                        spinner.ok("✅ ")
-                        spinner.stop()
-                    except:
-                        spinner.fail("💥 ")
-                        spinner.stop()    
-                #if product matches user input
-                if len(products):
-                    productType = convertTypeToProduct(currProject.type)
-                    spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is a \u001b[34m{}\u001b[0m project".format(currProject.name, productType), color="yellow")
-                    if productType in products:
-                        spinner.start()
-                        try:
-                            if not dryrun:
+                            if not deactivate:
                                 currProject.delete()
-                            spinner.ok("✅ ")
-                            spinner.stop()
-                        except exception as e:
-                            spinner.fail("💥 ")
-                            spinner.stop()
-                        spinner.stop()
-                #if origin matches user input
-                if currProject.origin in (origins):
-                    spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is a \u001b[34m{}\u001b[0m project".format(currProject.name, currProject.origin), color="yellow")
-                    spinner.start()
-                    try:
-                        if not dryrun:
-                            currProject.delete()
+                            else:
+                                currProject.deactivate()
                         spinner.ok("✅ ")
-                        spinner.stop()
-                    except:
+                    except exception as e:
                         spinner.fail("💥 ")
-                        spinner.stop()    
-                            #if org is empty and --delete-empty-org flag is on
+
+            #if org is empty and --delete-empty-org flag is on
             if len(currOrg.projects.all()) == 0 and deleteorgs:
                 spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is an empty organization".format(currOrg.name), color="yellow")
                 spinner.start()
@@ -119,11 +140,10 @@ def main(argv):
                     spinner.stop()
                 except:
                     spinner.fail("💥 ")
-                    spinner.stop()    
-                    
-     #process input orgs which didnt have a match
+                    spinner.stop()                       
+    #process input orgs which didnt have a match
     if len(inputOrgs) != 0:
-        print("\033[1;32m{}\u001b[0m are organizations which do not exist or you don't have access to them, please check your spelling and insure that spaces are replaced with dashes".format(inputOrgs))
+        print("\033[1;32m{}\u001b[0m are organizations which do not exist or you don't have access to them, please check your spelling, insure that spaces are replaced with dashes, and that you are using org slugs rather then display names".format(inputOrgs))
                 
     if dryrun:
         print("\033[93mDRY RUN COMPLETE NOTHING DELETED")

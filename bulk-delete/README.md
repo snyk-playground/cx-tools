@@ -12,21 +12,24 @@ Set your snyk token with <pre><code>export SNYK_TOKEN=TOKEN-GOES-HERE</code></pr
 
 Within the cloned repo run <pre><code>python3 snyk-bulk-delete.py (add flags here)</code></pre><br> add the necessary flags listed below <br>
 
+PROJECTS ARE DE-ACTIVATED BY DEFAULT AND NO ACTIONS ARE APPLIED UNLESS --FORCE FLAG IS USED, SEE DETAILS BELOW<br>
 <pre><code>
---help/-h : Returns this page \n--orgs/<br>
--o : A set of orgs upon which to perform delete (use ! for all orgs)<br>
---scatypes : Defines SCA type/s of projects to deletes <br>
+--help : Returns this page \n--orgs/<br>
+--orgs : A set of orgs upon which to perform delete, be sure to use org slug instead of org display name (use ! for all orgs)<br>
+--sca-types : Defines SCA type/s of projects to deletes <br>
 --products : Defines product/s types of projects to delete(opensource,container,iac,or sast)<br>
+--delete : By default this script will deactivate projects, add this flag to delete instead<br>
+--force : By default this script will perform a dry run, add this flag to apply actions<br>
 --origins : Defines origin types of projects to delete<br>
---dryrun : Add this flag to perform a dry run of script which doesn't actually delete any projects<br>
+--delete-empty-orgs : This will delete all orgs that do not have any projects in them<br>
  * Please replace spaces with dashes(-) when entering orgs <br>
  * If entering multiple values use the following format: "value-1 value-2 value-3"<br>
  * Types and origins are defined under this API > https://snyk.docs.apiary.io/#reference/projects/individual-project/retrieve-a-single-project
 </code></pre>
 
-Example where all npm and container projects are deleted within test org 1 and test org 2
+Example where all opensource npm and gradle projects from github are deleted within test-org-1 and test-org-2
 <br>
-<pre><code>python3 snyk-bulk-delete.py --orgs "test-org-1 test-org-2" --products container --scatypes npm
+<pre><code>python3 snyk-bulk-delete.py --orgs "test-org-1 test-org-2" --products container --sca-types "npm gradle" --origins github
 </code></pre>
 
 
