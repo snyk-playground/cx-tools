@@ -15,7 +15,7 @@ Steps you need to follow in order to set-up this integration:
 Samples provided include Azure Functions for:
 - <img src="azure-devops-boards-logo.png" width="50"> [Azure DevOps Boards](azure-function-azure-boards.cs)
 - <img src="microsoft-teams-logo.png" width="50"> [Microsoft Teams](azure-function-microsoft-teams.cs)
-- <img src="power-bi.png" width="50"> [Power BI](azure-function-power-bi.cs)
+- <img src="power-bi-logo.png" width="50"> [Power BI](azure-function-power-bi.cs)
 - <img src="newrelic-logo.png" width="50"> [New Relic Events](azure-function-newrelic.cs)
 - <img src="datadog-logo.png" width="50"> [DataDog](azure-function-datadog.cs)
 - <img src="slack-logo.png" width="50"> [Slack](https://docs.snyk.io/snyk-api-info/snyk-webhooks/using-snyk-webhooks-to-connect-snyk-to-slack-with-aws-lambda) (This one is using AWS Lambda)
@@ -114,12 +114,15 @@ Content-Type: application/json
 ### 3.2. Microsoft Teams
 ![](microsoft-teams-dashboard.png)
 
-### 3.3. New Relic
+### 3.3. Power BI
+![](power-bi-dashboard.png)
+
+### 3.4. New Relic
 - ![](newrelic-dashboard.png)
 - ![](newrelic-dashboard-custom.png)
 
-### 3.4. DataDog
+### 3.5. DataDog
 ![](datadog-dashboard.png)
 
-### 3.5. Splunk
+### 3.6. Splunk
 ![](splunk-dashboard.png)
