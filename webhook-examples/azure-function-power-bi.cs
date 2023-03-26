@@ -211,7 +211,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
                     string payload = sb.ToString();
                     payload = payload.Replace(System.Environment.NewLine, ". ");
 
-                    if (payload != "{\"findings\":[]}")
+                    if (payload != "")
                     {
                         log.LogInformation("payload: " + payload);
                         var content = new StringContent(payload, Encoding.UTF8, "application/json");
