@@ -28,6 +28,8 @@ This Azure Functions require the following environment variables to be set-up
 ### 1.1. Azure DevOps Boards work items to be created:
 <img src="azure-devops-boards-logo.png" width="50">
 
+Please speficy the below application settings:
+
 - AZURE_DEVOPS_ORG: the name of the Azure DevOps organisation
 - AZURE_DEVOPS_PROJECT: (optional) the Azure DevOps project to create work items for, by default the code will map to the same project that it identified in Snyk
 - AZURE_DEVOPS_USER: the Azure DevOps user name
@@ -44,6 +46,8 @@ This integration also supports the use case of specifying a specific Azure Board
 ### 1.2. Microsoft Teams messages:
 <img src="microsoft-teams-logo.png" width="50">
 
+Please speficy the below application settings:
+
 - MS_TEAMS_WEBHOOK: the webhook connector for your Microsoft Teams channel
 
 For more information on how to format messages for Microsoft Teams connectors, see this [docs page](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using?tabs=cURL).
@@ -51,10 +55,16 @@ For more information on how to format messages for Microsoft Teams connectors, s
 ### 1.3. Power BI Streaming Dataset:
 <img src="power-bi-logo.png" width="50">
 
+A step-by-step guide for setting up a Power BI Streaming Dataset is available [here](https://powerbi.microsoft.com/en-us/blog/push-rows-to-a-power-bi-streaming-dataset-without-writing-any-code-using-microsoft-flow/).
+
+Please speficy the below application settings:
+
 - POWER_BI_DATASET_URL: Power BI Push API URL for the Power BI Streaming Dataset, i.e. https://api.powerbi.com/beta/...
 
 ### 1.4. New Relic events:
 <img src="newrelic-logo.png" width="50">
+
+Please speficy the below application settings:
 
 - NEW_RELIC_INSIGHTS_URL: URL for the New Relic accounts' event API, i.e. https://insights-collector.newrelic.com/v1/accounts/{NR-ACCOUNT-ID}/events
 - NEW_RELIC_LICENSE_KEY: New Relic License Key
@@ -62,11 +72,15 @@ For more information on how to format messages for Microsoft Teams connectors, s
 ### 1.5. DataDog events:
 <img src="datadog-logo.png" width="50">
 
+Please speficy the below application settings:
+
 - DATADOG_EVENTS_URL: URL for the DataDog event API, i.e. https://api.datadoghq.com/api/v1/events
 - DATADOG_API_KEY: DataDog API Key
 
 ### 1.6. Splunk Observability Cloud metrics:
 <img src="splunk-logo.png" width="50">
+
+Please speficy the below application settings:
 
 - SPLUNK_EVENTS_URL: URL for the Splunk datapoints API, i.e. https://ingest.us1.signalfx.com/v2/datapoint
 - SPLUNK_ACCESS_TOKEN: Splunk Access Token
