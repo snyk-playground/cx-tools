@@ -48,25 +48,30 @@ This integration also supports the use case of specifying a specific Azure Board
 
 For more information on how to format messages for Microsoft Teams connectors, see this [docs page](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using?tabs=cURL).
 
-### 1.3. New Relic events:
+### 1.3. Power BI Streaming Dataset:
+<img src="power-bi-logo.png" width="50">
+
+- POWER_BI_DATASET_URL: Power BI Push API URL for the Power BI Streaming Dataset, i.e. https://api.powerbi.com/beta/...
+
+### 1.4. New Relic events:
 <img src="newrelic-logo.png" width="50">
 
 - NEW_RELIC_INSIGHTS_URL: URL for the New Relic accounts' event API, i.e. https://insights-collector.newrelic.com/v1/accounts/{NR-ACCOUNT-ID}/events
 - NEW_RELIC_LICENSE_KEY: New Relic License Key
 
-### 1.4. DataDog events:
+### 1.5. DataDog events:
 <img src="datadog-logo.png" width="50">
 
 - DATADOG_EVENTS_URL: URL for the DataDog event API, i.e. https://api.datadoghq.com/api/v1/events
 - DATADOG_API_KEY: DataDog API Key
 
-### 1.5. Splunk Observability Cloud metrics:
+### 1.6. Splunk Observability Cloud metrics:
 <img src="splunk-logo.png" width="50">
 
 - SPLUNK_EVENTS_URL: URL for the Splunk datapoints API, i.e. https://ingest.us1.signalfx.com/v2/datapoint
 - SPLUNK_ACCESS_TOKEN: Splunk Access Token
 
-### 1.6. Gather Azure Function URL
+### 1.7. Gather Azure Function URL
 
 Select the appropriate Azure Function and copy the Function URL (pls. find below an example for my New Relic Azure Function).
 
