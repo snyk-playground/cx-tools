@@ -23,6 +23,7 @@ def main(argv):
     deleteorgs = False
     dryrun = True
     deactivate = True
+    filtersEmpty = len(scaTypes) == 0 and len(products) == 0 and len(origins) == 0
     
     #valid input arguments declared here
     try:
@@ -56,7 +57,7 @@ def main(argv):
             deactivate = False
         
     #error handling if no filters declared
-    if len(scaTypes) == 0 and len(products) == 0 and len(origins) == 0 and not deleteorgs:
+    if filtersEmpty and not deleteorgs:
         print("No settings entered, exiting")
         print(helpString)
         sys.exit(2)
@@ -113,7 +114,7 @@ def main(argv):
                     productMatch = True  
                 
                 #delete project if filter are meet
-                if scaTypeMatch and originMatch and productMatch and isActive:
+                if scaTypeMatch and originMatch and productMatch and isActive and not filtersEmpty:
                     currProjectDetails = f"Origin: {currProject.origin}, Type: {currProject.type}, Product: {currProjectProductType}"
                     action =  "Deactivating" if deactivate else "Deleting"
                     spinner = yaspin(text=f"{action}\033[1;32m {currProject.name}", color="yellow")
