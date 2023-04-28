@@ -29,7 +29,7 @@ PROJECTS ARE DE-ACTIVATED BY DEFAULT AND NO ACTIONS ARE APPLIED UNLESS --FORCE F
 
 Example where all opensource npm and gradle projects from github are deleted within test-org-1 and test-org-2
 <br>
-<pre><code>python3 snyk-bulk-delete.py --orgs "test-org-1 test-org-2" --products container --sca-types "npm gradle" --origins github
+<pre><code>python3 snyk-bulk-delete.py --orgs "test-org-1 test-org-2" --products opensource --sca-types "npm gradle" --origins github
 </code></pre>
 
 
