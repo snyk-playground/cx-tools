@@ -19,7 +19,7 @@ PROJECTS ARE DE-ACTIVATED BY DEFAULT AND NO ACTIONS ARE APPLIED UNLESS --FORCE F
 --sca-types : Defines SCA type/s of projects to deletes <br>
 --products : Defines product/s types of projects to delete(opensource,container,iac,or sast)<br>
 --delete : By default this script will deactivate projects, add this flag to delete active projects instead<br>
---delete-non-active-projects : By default this script will deactivate projects, add this flag to delete active AND non-active projects instead<br>
+--delete-non-active-projects : By default this script will deactivate projects, add this flag to delete non-active projects instead<br>
 --force : By default this script will perform a dry run, add this flag to apply actions<br>
 --origins : Defines origin types of projects to delete<br>
 --delete-empty-orgs : This will delete all orgs that do not have any projects in them<br>
