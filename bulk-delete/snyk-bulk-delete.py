@@ -3,7 +3,7 @@ from yaspin import yaspin
 from helperFunctions import *
 import time
 
-helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactive projects, add this flag to delete\n--delete-non-active-projects : By default this script will deactivate projects, add this flag to delete active AND non-active projects instead \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
+helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactivate projects, add this flag to delete active projects instead \n--delete-non-active-projects : By default this script will deactivate projects, add this flag to delete non-active projects instead \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
             '''
 
 #get all user orgs and verify snyk API token
@@ -118,8 +118,8 @@ def main(argv):
                 else:
                     productMatch = True  
                 
-                #delete project if filter are meet
-                if scaTypeMatch and originMatch and productMatch and (isActive or deleteNonActive) and not filtersEmpty:
+                #delete active project if filter are meet
+                if scaTypeMatch and originMatch and productMatch and isActive and not filtersEmpty:
                     currProjectDetails = f"Origin: {currProject.origin}, Type: {currProject.type}, Product: {currProjectProductType}"
                     action =  "Deactivating" if deactivate else "Deleting"
                     spinner = yaspin(text=f"{action}\033[1;32m {currProject.name}", color="yellow")
@@ -134,7 +134,18 @@ def main(argv):
                         spinner.ok("✅ ")
                     except exception as e:
                         spinner.fail("💥 ")
-
+                #delete non-active project if filters are meet
+                if scaTypeMatch and originMatch and productMatch and (not isActive) and deleteNonActive and not filtersEmpty:
+                    currProjectDetails = f"Origin: {currProject.origin}, Type: {currProject.type}, Product: {currProjectProductType}"
+                    spinner = yaspin(text=f"Deleting\033[1;32m {currProject.name}", color="yellow")
+                    spinner.write(f"\u001b[0m    Processing project: \u001b[34m{currProjectDetails}\u001b[0m, Status Below👇")
+                    spinner.start()
+                    try:
+                        if not dryrun:
+                                currProject.delete()
+                        spinner.ok("✅ ")
+                    except exception as e:
+                        spinner.fail("💥 ")
             #if org is empty and --delete-empty-org flag is on
             if len(currOrg.projects.all()) == 0 and deleteorgs:
                 spinner = yaspin(text="Deleting\033[1;32m {}\u001b[0m since it is an empty organization".format(currOrg.name), color="yellow")
