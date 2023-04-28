@@ -3,7 +3,7 @@ from yaspin import yaspin
 from helperFunctions import *
 import time
 
-helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactive projects, add this flag to delete \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
+helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactive projects, add this flag to delete\n--delete-non-active-projects : By default this script will deactivate projects, add this flag to delete active AND non-active projects instead \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
             '''
 
 #get all user orgs and verify snyk API token
@@ -23,10 +23,12 @@ def main(argv):
     deleteorgs = False
     dryrun = True
     deactivate = True
+    deleteNonActive = False
+
     
     #valid input arguments declared here
     try:
-        opts, args = getopt.getopt(argv, "hofd",["help", "orgs=", "sca-types=", "products=", "origins=", "force", "delete-empty-orgs", "delete"] )
+        opts, args = getopt.getopt(argv, "hofd",["help", "orgs=", "sca-types=", "products=", "origins=", "force", "delete-empty-orgs", "delete", "delete-non-active-projects"] )
     except getopt.GetoptError:
         print("Error parsing input, please check your syntax")
         sys.exit(2)
@@ -48,15 +50,19 @@ def main(argv):
             products =[product.lower() for product in arg.split()]
         if opt == '--origins':
             origins =[origin.lower() for origin in arg.split()]
-        if opt == '--delete-empty-orgs':
+        if opt =='--delete-empty-orgs':
             deleteorgs = True
         if opt =='--force':
             dryrun = False
         if opt =='--delete':
             deactivate = False
-        
+        if opt =='--delete-non-active-projects':
+            deactivate = False
+            deleteNonActive = True
     #error handling if no filters declared
-    if len(scaTypes) == 0 and len(products) == 0 and len(origins) == 0 and not deleteorgs:
+    filtersEmpty = len(scaTypes) == 0 and len(products) == 0 and len(origins) == 0
+    if filtersEmpty and not deleteorgs:
+        print(filtersEmpty)
         print("No settings entered, exiting")
         print(helpString)
         sys.exit(2)
@@ -113,7 +119,7 @@ def main(argv):
                     productMatch = True  
                 
                 #delete project if filter are meet
-                if scaTypeMatch and originMatch and productMatch and isActive:
+                if scaTypeMatch and originMatch and productMatch and (isActive or deleteNonActive) and not filtersEmpty:
                     currProjectDetails = f"Origin: {currProject.origin}, Type: {currProject.type}, Product: {currProjectProductType}"
                     action =  "Deactivating" if deactivate else "Deleting"
                     spinner = yaspin(text=f"{action}\033[1;32m {currProject.name}", color="yellow")
