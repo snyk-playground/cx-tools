@@ -3,7 +3,7 @@ from yaspin import yaspin
 from helperFunctions import *
 import time
 
-helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactivate projects, add this flag to delete active projects instead \n--delete-non-active-projects : By default this script will deactivate projects, add this flag to delete non-active projects instead \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
+helpString ='''--help : Returns this page \n--force : By default this script will perform a dry run, add this flag to actually apply changes\n--delete : By default this script will deactivate projects, add this flag to delete active projects instead \n--delete-non-active-projects : By default this script will deactivate projects, add this flag to delete non-active projects instead (if this flag is present only non-active projects will be deleted) \n--origins : Defines origin types of projects to delete\n--orgs : A set of orgs upon which to perform delete,be sure to use org slug instead of org display name (use ! for all orgs)\n--scatypes : Defines SCA type/s of projects to deletes \n--products : Defines product/s types of projects to delete\n--delete-empty-orgs : This will delete all orgs that do not have any projects in them \n* Please replace spaces with dashes(-) when entering orgs \n* If entering multiple values use the following format: "value-1 value-2 value-3"
             '''
 
 #get all user orgs and verify snyk API token
@@ -119,7 +119,7 @@ def main(argv):
                     productMatch = True  
                 
                 #delete active project if filter are meet
-                if scaTypeMatch and originMatch and productMatch and isActive and not filtersEmpty:
+                if scaTypeMatch and originMatch and productMatch and isActive and not filtersEmpty and not deleteNonActive:
                     currProjectDetails = f"Origin: {currProject.origin}, Type: {currProject.type}, Product: {currProjectProductType}"
                     action =  "Deactivating" if deactivate else "Deleting"
                     spinner = yaspin(text=f"{action}\033[1;32m {currProject.name}", color="yellow")
