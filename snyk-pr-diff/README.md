@@ -33,6 +33,14 @@ GitHub Action examples:
 - IaC:  https://github.com/snyk-playground/cx-tools/blob/main/snyk-pr-diff/examples/github-action-snyk-iac-diff.yml
 
 ## GitHub Action Screenshot
-![image](https://github.com/hezro/snyk-code-pr-diff/assets/17459977/e90671d3-bfa1-413e-b85a-fba642008c1b)
+Code Output:
+
+![image](https://github.com/snyk-playground/cx-tools/assets/20120261/d1a134f8-0393-4524-8095-7ed92c8e9c0d)
+
+IaC Output:
+
+![image](https://github.com/snyk-playground/cx-tools/assets/20120261/c3b846ff-9eae-403a-886d-bd180f92b4f9)
+
+
 
 
