@@ -28,9 +28,9 @@ Compares two JSON files for both Snyk Code and IaC to provide details on:
   
 
 ## Examples
-- GitHub Action examples:
-    Code: https://github.com/snyk-playground/cx-tools/blob/main/snyk-pr-diff/examples/github-action-snyk-code-diff.yml
-    IaC:  https://github.com/snyk-playground/cx-tools/blob/main/snyk-pr-diff/examples/github-action-snyk-iac-diff.yml
+GitHub Action examples:
+- Code: https://github.com/snyk-playground/cx-tools/blob/main/snyk-pr-diff/examples/github-action-snyk-code-diff.yml
+- IaC:  https://github.com/snyk-playground/cx-tools/blob/main/snyk-pr-diff/examples/github-action-snyk-iac-diff.yml
 
 ## GitHub Action Screenshot
 ![image](https://github.com/hezro/snyk-code-pr-diff/assets/17459977/e90671d3-bfa1-413e-b85a-fba642008c1b)
