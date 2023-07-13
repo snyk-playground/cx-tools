@@ -1,0 +1,61 @@
+name: Snyk Code PR Diff Scan
+
+on:
+  pull_request:
+   branches: [ main ]
+
+jobs:
+  snyk-pipeline:
+    runs-on: ubuntu-latest
+    name: Snyk Code PR Diff Scan
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+    # Checkout base ref branch
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.base_ref }}
+    - name: Download Snyk
+      run: |
+         wget -O snyk https://static.snyk.io/cli/latest/snyk-linux
+         chmod +x ./snyk
+         mv ./snyk /usr/local/bin/
+
+    - name: Authenticate Snyk
+      run: snyk auth ${SNYK_TOKEN}
+
+    - name: Run Snyk Code
+      run: snyk code test --json-file-output=${{ github.workspace }}/snyk_code_baseline.json
+      continue-on-error: true
+
+    # Upload the Snyk Code results from the main branch
+    - uses: actions/upload-artifact@v3
+      with:
+         name: snyk_code_baseline
+         path: ${{ github.workspace }}/snyk_code_baseline.json
+
+    # Checkout PR branch
+    - uses: actions/checkout@v3
+    - name: Authenticate Snyk
+      run: snyk auth ${SNYK_TOKEN}
+
+    - name: Run Snyk Code
+      run: |
+        sleep 10s
+        snyk code test --json-file-output=${{ github.workspace }}/snyk_code_pr.json || true
+      continue-on-error: true
+
+    # Upload the Snyk Code results from the PR scan
+    - uses: actions/upload-artifact@v3
+      with:
+          name: snyk_code_pr
+          path: ${{ github.workspace }}/snyk_code_pr.json
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: snyk_code_baseline
+
+    - name: Check if new issues have been introduced via the PR
+      run: |
+        chmod +x "${{ github.workspace }}/.github/snyk-pr-diff-amd64-linux"
+        ${{ github.workspace }}/.github/snyk-pr-diff-amd64-linux code ${{ github.workspace }}/snyk_code_baseline.json ${{ github.workspace }}/snyk_code_pr.json
