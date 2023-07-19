@@ -22,7 +22,7 @@ Use this script to import "fresh" container images into Snyk and/or remove/decat
 
 ### Endpoints used:
 
-[List all Snyk projects per org](https://snyk.docs.apiary.io/#reference/projects/all-projects/list-all-projects) - Used for listing all GCR projects
+[List all Snyk projects per org](https://apidocs.snyk.io/?version=2023-06-23%7Ebeta#tag--Projects) - Used for listing all GCR projects
 
 [Import a target](https://snyk.docs.apiary.io/#reference/import-projects/import/import-targets) - Used to import a repo
 
@@ -117,28 +117,31 @@ const getImportJobStatus = async (imageJobLocation) => {
 };
  
 const listAllGcrProjectsOverXMillisecondsOld = async (numberOfMs) => {
- var body = {
-   filters: {
-     origin: "gcr",
-   },
- };
- 
- const result = await fetch(`https://snyk.io/api/v1/org/${orgId}/projects`, {
-   method: "POST",
+  let allProjects = []
+  let nextPage = `/orgs/${orgId}/projects?version=2023-06-23&limit=100&origins=GCR`
+  
+  while(nextPage){
+   let response = await fetch(`https://api.snyk.io/rest${nextPage}&origins=GCR`, {
+   method: "GET",
    headers: {
      "Content-Type": "application/json; charset=utf-8",
      Authorization: `token ${authToken}`,
-   },
-   body: JSON.stringify(body),
- });
- const res = await result.json();
- return res.projects
-   .filter(
-     (project) =>
-       new Date().getTime() - new Date(project.created).getTime() >
-       1000 * 60 * 60 * 24
-   )
-   .map((project) => project.id);
+      },
+    });
+    response = await response.json()
+    allProjects.push(response.data)
+    if (response.links.next != undefined){
+      nextPage = response.links.next
+    }else{
+      nextPage = undefined
+    }
+  }
+
+  return allProjects[0].filter(
+    (project) =>
+      new Date().getTime() - new Date(project.attributes.created).getTime() >
+      1000 * 60 * 60 * 24
+  ).map((project) => project.id);
 };
  
 const deleteProject = async (projectId) => {

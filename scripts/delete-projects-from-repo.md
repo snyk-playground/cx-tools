@@ -1,46 +1,25 @@
 # How to delete all projects of a repo
 
 ## Description:
-Works only for CLI. For SCM need to change for browserUrl instead of repoUrl
+Deletes all projects that match a certain repoURL
 
 
 ## Instructions
-call : ./your-script-file <API-Token> <RepoName> <org-id>
+1. Make sure you have [pysnyk](https://github.com/snyk-labs/pysnyk) installed. <br>
+2. Set your variables inside the script (org ID, API token, repoURL )
+3. call : ./your-script-file 
 
+import snyk
+import os 
 
 ```
-set +x
-APItoken=$1
-repoUrl=$2
-org=$3
+repoUrlToDelete = "repo-url-here"
+client = snyk.SnykClient("snyk-token-here")
+org = client.organizations.get("org-id-here")
 
- projs=($(curl -s \
-     --request GET \
-     --header "Content-Type: application/json" \
-     --header "Authorization: ${APItoken}" \
-"https://api.snyk.io/rest/orgs/${org}/projects" | jq --raw-output ' .projects[].id, .projects[].remoteRepoUrl, .projects[].name' ))
-total=${#projs[@]}
-let total=total/3
-
-
-for (( i=0; i<$total; i++ ));
-do
-    let ii=i+total
-    let iii=total+total+i
-    #echo "----------------"
-    #echo "${projs[$iii]}" "\t" "${projs[$ii]}" "\t" "${projs[$i]}"   ;
-    # Group ID - #org ID - ORG-name
-   if  [ "${projs[$ii]}" = "$repoUrl" ] ; then
-      #echo "----------------"
-      #echo "Project\tName: ${projs[$iii]}" "\tRepo: " "${projs[$ii]}" "\tID :" "${projs[$i]}"   ;
-
-      curl --include \
-           --request DELETE \
-           --header "Content-Type: application/json" \
-           --header "Authorization: ${APItoken}" \
-        "https://snyk.io/api/v1/org/${org}/project/${projs[$i]}"
-    fi
-
-done
-      echo "------ Deleted projects from ${repoUrl} on org ${org}---------------"
+projects = org.projects.all()
+for project in projects:
+  if project.remoteRepoUrl == repoUrlToDelete:
+    print("Deleting project:" + project.name )
+    project.delete()
 ```
