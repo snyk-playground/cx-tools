@@ -38,7 +38,7 @@ Open Notepad or similar app and copy the following strings to use later:
 
 ## Script for move_projects.py:
 ```
-#This script will move all projects from one Snyk Organization to another.
+#This script will move all projects from one Snyk Organization to another, Note - only 100 projects will be moved at a time.
 
 import requests
 
@@ -46,7 +46,11 @@ print("This script will move the projects from one Snyk Organization to another.
 current_org = input("Enter the org ID your where your current projects are:")
 move_org = input("Enter the org ID your where you would like to move your projects:")
 auth_token = input("Enter your Snyk API token:")
-url = "https://snyk.io/api/v1/org/"+ current_org + "/projects"
+url = "https://api.snyk.io/rest/orgs/"+ current_org + "projects?version=2023-06-23&limit=100"
+
+
+
+
 
 payload={}
 headers = {
@@ -59,10 +63,10 @@ response = requests.request("POST", url, headers=headers, data=payload)
 response_dict = response.json()
 
 proj_count=0
-while response_dict['projects']:
-  project = response_dict['projects'].pop()
+while response_dict['data']:
+  project = response_dict['data'].pop()
   current_project=project['id']
-  current_proj_name=project['name']
+  current_proj_name=project['attributes.name']
   url = "https://snyk.io/api/v1/org/"+current_org+"/project/"+current_project+"/move"
   payload={
     "targetOrgId": move_org
