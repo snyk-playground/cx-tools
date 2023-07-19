@@ -117,7 +117,7 @@ for vul in vulns['results']:
 #curl -s \\
 #     --header "Content-Type: application/json" \\
 #     --header "Authorization: 7db595c1-675a-4394-83fc-a182b76c38d5" \\
-#  '<https://snyk.io/api/v1/org/3842b754-f9b0-4500-b6da-3c21bb8c3f47/projects>' | jq  '.projects'
+#  '<https://api.snyk.io/rest/orgs/${orgId}/projects?version=2023-06-23&limit=100>' | jq  '.projects'
 
 curl -s \\
      --request POST \\
