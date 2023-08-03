@@ -2,7 +2,7 @@
 
 ## Description
 
-Use this script to fetch projects snapshots and use that data, for example: create custom reports with this data internally.
+Use this script to fetch projects snapshots and use that data, for example: create custom reports with this data internally.(At the moment this script does not use pagination and will only work for 100 orgs or a 100 projects at a time)
 
 ## Flow and Endpoints
 
@@ -18,7 +18,7 @@ Use this script to fetch projects snapshots and use that data, for example: crea
 ```Python
 from pprint import pprint
 import requests
-import sny
+import snyk
 AUTH_HEADER = {'Authorization': 'token ${SNYK_TOKEN}'}
 GROUP_ID = ${SNYK_GROUP_ID}
 print('Fetching orgs for group_id {group_id}'.format(group_id=GROUP_ID))
