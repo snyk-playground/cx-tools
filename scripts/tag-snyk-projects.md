@@ -22,8 +22,7 @@ Apply appId tag to project `appId: <VALUE>`
 
 **Fetching project (with or without tags associated with them)**
 
-[https://apidocs.snyk.io/?version=2023-06-23%7Ebeta#get-/orgs/-org_id-/projects/-project_id-]
-(https://apidocs.snyk.io/?version=2023-06-23%7Ebeta#get-/orgs/-org_id-/projects/-project_id-)
+[https://snyk.docs.apiary.io/#reference/projects/all-projects/list-all-projects](https://snyk.docs.apiary.io/#reference/projects/all-projects/list-all-projects)
 
 **Adding a tag**
 
@@ -46,10 +45,10 @@ SNYK_ORG=$4
 SUFFIX=${SUFFIX:-}
 
 curl -s -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' $IMPORT |\
-	jq -r '.logs|.[]|select(.name=="'$SNYK_ORG'/'$PROJECT'").data|.[].projectUrl'
+	jq -r '.logs|.[]|select(.name=="'$SNYK_ORG'/'$PROJECT'").projects|.[].projectUrl'
 
 projects=$(curl -s -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' $IMPORT \
-	jq -r '.logs|.[]|select(.name=="'$SNYK_ORG'/'$PROJECT'").data|.[].projectUrl' |\
+	jq -r '.logs|.[]|select(.name=="'$SNYK_ORG'/'$PROJECT'").projects|.[].projectUrl' |\
 	awk '/-/' | gsed 's_.*/project/__;s_"__')
 for p in $projects; do
 	echo $p
