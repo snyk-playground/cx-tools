@@ -89,12 +89,12 @@ def main(argv):
             #cycle through all projects in current org and delete projects that match filter
             for currProject in currOrg.projects.all():
 
-
                 #variables which determine whether project matches criteria to delete, if criteria is empty they will be defined as true
                 scaTypeMatch = False
                 originMatch = False
                 productMatch = False
                 isActive = currProject.isMonitored
+                
 
                 #if scatypes are not declared or curr project type matches filter criteria then return true
                 if len(scaTypes) != 0:

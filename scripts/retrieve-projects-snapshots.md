@@ -2,7 +2,7 @@
 
 ## Description
 
-Use this script to fetch projects snapshots and use that data, for example: create custom reports with this data internally.
+Use this script to fetch projects snapshots and use that data, for example: create custom reports with this data internally.(At the moment this script does not use pagination and will only work for 100 orgs or a 100 projects at a time)
 
 ## Flow and Endpoints
 
@@ -18,6 +18,7 @@ Use this script to fetch projects snapshots and use that data, for example: crea
 ```Python
 from pprint import pprint
 import requests
+import snyk
 AUTH_HEADER = {'Authorization': 'token ${SNYK_TOKEN}'}
 GROUP_ID = ${SNYK_GROUP_ID}
 print('Fetching orgs for group_id {group_id}'.format(group_id=GROUP_ID))
@@ -30,8 +31,9 @@ for org in orgs:
     print('  Fetching projects for org_id {org_id} ({name})'.format(
         org_id=org_id, name=org['name']))
     r = requests.get(
-        'https://snyk.io/api/v1/org/{org_id}/projects'.format(org_id=org_id), headers=AUTH_HEADER)
-    projects = r.json()['projects']
+        # TODO: there are more than 100 projects (pagination)
+        'https://api.snyk.io/rest/orgs/{org_id}/projects?version=2023-06-23&limit=100'.format(org_id=org_id), headers=AUTH_HEADER)
+    projects = r.json()['data']
     for project in projects:
         project_id = project['id']
         print('    Fetching snapshots for project_id {project_id} ({name})'.format(

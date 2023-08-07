@@ -23,4 +23,4 @@ Use this script to find all your Snyk projects that are affected by a certain vu
 
 - [Get a filtered list of issues](https://snyk.docs.apiary.io/#reference/reporting-api/issues/get-list-of-issues)
 - [Get the organization IDs to feed to the reporting API call above](https://snyk.docs.apiary.io/#reference/groups/list-all-organizations-in-a-group/list-all-organizations-in-a-group)
-- [Get all projects to construct proper links to SCM, including branch name](https://snyk.docs.apiary.io/#reference/projects/all-projects/list-all-projects)
+- [Get all projects to construct proper links to SCM, including branch name](https://apidocs.snyk.io/?version=2023-06-23#get-/orgs/-org_id-/projects)

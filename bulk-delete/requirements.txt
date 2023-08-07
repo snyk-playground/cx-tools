@@ -1,2 +1,2 @@
-pysnyk
+pysnyk==0.9.8
 yaspin
