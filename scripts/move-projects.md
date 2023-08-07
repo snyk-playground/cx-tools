@@ -2,7 +2,7 @@
 This is a script to move all projects from one Snyk org to another. 
 
 ## Before you begin:
-Ensure you are running a current version of Python.  You can get the latest version [here](https://www.python.org/downloads/). <br>
+Ensure you are running a current version of Python.  You can get the latest version [here](https://www.python.org/downloads/). Also insure you have [pysnyk](https://github.com/snyk-labs/pysnyk) installed <br>
 
 
 Open Notepad or similar app and copy the following strings to use later:
@@ -38,38 +38,33 @@ Open Notepad or similar app and copy the following strings to use later:
 
 ## Script for move_projects.py:
 ```
-#This script will move all projects from one Snyk Organization to another.
-
+#This script will move all projects from one Snyk Organization to another import snyk
 import requests
 
-print("This script will move the projects from one Snyk Organization to another.")
-current_org = input("Enter the org ID your where your current projects are:")
-move_org = input("Enter the org ID your where you would like to move your projects:")
-auth_token = input("Enter your Snyk API token:")
-url = "https://snyk.io/api/v1/org/"+ current_org + "/projects"
+current_org = "Enter the org ID your where your current projects are"
+move_org = "Enter the org ID your where you would like to move your projects"
+auth_token = "Enter your Snyk API token"
 
-payload={}
 headers = {
   'Authorization': 'token '+auth_token
 }
-
-response = requests.request("POST", url, headers=headers, data=payload)
-
-
-response_dict = response.json()
+rest_client = snyk.SnykClient(auth_token, version="2023-06-23", url="https://api.snyk.io/rest")
+v1_client = snyk.SnykClient(auth_token)
+params = {"limit": 100}
+projects = rest_client.get_rest_pages(f"orgs/{current_org}/projects", params=params)
 
 proj_count=0
-while response_dict['projects']:
-  project = response_dict['projects'].pop()
-  current_project=project['id']
-  current_proj_name=project['name']
-  url = "https://snyk.io/api/v1/org/"+current_org+"/project/"+current_project+"/move"
+for curr_proj in projects:
+  print(curr_proj['attributes']['name'])
+  curr_id=curr_proj['id']
+  curr_name=curr_proj['attributes']['name']
+  url = "https://snyk.io/api/v1/org/"+current_org+"/project/"+curr_id+"/move"
   payload={
     "targetOrgId": move_org
   }
-  print("Moving project "+current_proj_name+"...")
-  #print(url)
+  print("Moving project "+curr_name+"...")
   requests.request("PUT", url, headers=headers, data=payload)
   proj_count+=1
 print("Project move complete. "+str(proj_count)+" projects moved.")
+
 ```

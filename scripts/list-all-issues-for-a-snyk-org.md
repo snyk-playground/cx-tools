@@ -6,7 +6,7 @@ Use this script to get all the issues (including code issues) for a specific Sny
 
 ## Flow and Endpoints
 
-- Call [API](https://snyk.docs.apiary.io/reference/projects/all-projects) to retrieve all projects ID
+- Call [API](https://apidocs.snyk.io/?version=2023-06-23%7Ebeta#tag--Projects) to retrieve all projects ID
 - For each project call get issues API from aggregated issues API and V3 (if "type": "sast")
 
 **For no code projects**
@@ -20,9 +20,3 @@ Use this script to get all the issues (including code issues) for a specific Sny
 
 
 - If issue is ignored call this [endpoint](https://snyk.docs.apiary.io/reference/projects/project-ignores-by-issue/retrieve-ignore) to get the ignore reason
-
-## Code examples
-
-Python:
-
-[https://github.com/obenn/snyk-api-workshop](https://github.com/obenn/snyk-api-workshop)
