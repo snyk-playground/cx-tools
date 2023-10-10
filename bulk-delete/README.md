@@ -18,7 +18,7 @@ PROJECTS ARE DE-ACTIVATED BY DEFAULT AND NO ACTIONS ARE APPLIED UNLESS --FORCE F
 --orgs : A set of orgs upon which to perform delete, be sure to use org slug instead of org display name (use ! for all orgs)<br>
 --sca-types : Defines SCA type/s of projects to deletes <br>
 --after : Only delete projects that were created after a certain date time (in ISO 8601 format, i.e 2023-09-01T00:00:00.000Z) <br>
---after : Only delete projects that were created before a certain date time (in ISO 8601 format, i.e 2023-09-01T00:00:00.000Z)<br>
+--before : Only delete projects that were created before a certain date time (in ISO 8601 format, i.e 2023-09-01T00:00:00.000Z)<br>
 --ignore-keys : An array of key's, if any of these key's are present in a project name then that project will not be targeted for deletion/deactivation<br>
 --products : Defines product/s types of projects to delete(opensource,container,iac,or sast)<br>
 --delete : By default this script will deactivate projects, add this flag to delete active projects instead<br>
