@@ -85,12 +85,16 @@ def tagged_project_issues(headers, args):
             # Print the project vuln page content
             if len(pi_response['data']):
                 proj_issues = {}
-                project["issues"] = pi_response['data']
+                try:
+                    project["issues"] =  project["issues"] + pi_response['data']
+                except:
+                    project["issues"] = pi_response['data']
 
                 # project issues pagination - Next page?
                 pi_pagination = next_page(pi_response)
                 if pi_pagination is None:
                     break
+
             else:
                 break
 
