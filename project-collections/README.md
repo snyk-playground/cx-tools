@@ -15,13 +15,13 @@ build_collection -a \<snyk-auth-token\> -v "snyk-rest-api-version" -g "snyk-grou
 build_collection --snyk_token \<snyk-auth-token\> 
     --grp_name "kevin.matthews Group" --org_name "PR Test Org" --collection_name="squad-3" --project_tags "squad-name:squad-3" --effective_severity_level="critical,high"  --api_ver "2024-01-23"
 ##### Assuming default arg values where possible
-tagged_project_issues --snyk_token \<snyk-auth-token\> 
+build_collection --snyk_token \<snyk-auth-token\> 
     --grp_name "kevin.matthews Group" --org_name "PR Test Org" --collection_name="squad-3" --project_tags "squad-name:squad-3"
 
 #### Argument flags
-tagged_project_issues -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -t "squad-name:squad-3" -s "critical,high" -v "2024-01-23"
+build_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -t "squad-name:squad-3" -s "critical,high" -v "2024-01-23"
 ##### Assuming default arg values where possible
-tagged_project_issues -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -t "squad-name:squad-3"
+build_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -t "squad-name:squad-3"
 
 ### Arguments
 - --snyk_token <snyk_auth_token>
