@@ -68,8 +68,22 @@ def build_collection(headers, args):
 
 
 def find_collection(headers, args, org):
-    collections = utils.rest_api.get_collections(headers, args["api_ver"], org)
-    for coll in collections:
+
+    c_pagination = None
+    collections = []
+
+    while True:
+        response = json.loads(utils.rest_api.get_collections(headers, args["api_ver"], org, c_pagination))
+        collections = collections + response["data"]
+
+        # Next page?
+        c_pagination = next_page(response)
+        if c_pagination is None:
+            break
+
+    for coll in response["data"]:
         if coll['attributes']['name'] == args["collection_name"]:
             return coll['id']
+
     return utils.rest_api.create_a_collection(headers, args, org)
+

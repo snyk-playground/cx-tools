@@ -50,10 +50,15 @@ def add_project_to_collection(headers, args, org, collection_id, project):
     return response.text
 
 
-def get_collections(headers, api_ver, org):
-    url = 'https://api.snyk.io/rest/orgs/{0}/collections?version={1}'.format(org['id'], api_ver)
+def get_collections(headers, api_ver, org, pagination):
+
+    if pagination is None:
+        url = 'https://api.snyk.io/rest/orgs/{0}/collections?version={1}'.format(org['id'], api_ver)
+    else:
+        url = 'https://api.snyk.io/rest/orgs/{0}/collections?version={1}&starting_after={2}'.format(org['id'], api_ver, pagination)
+
     response = requests.request("GET", url, headers=headers)
-    return json.loads(response.text)['data']
+    return response.text
 
 
 def org_projects(headers, api_ver, org, project_tags, pagination):
