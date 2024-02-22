@@ -1,6 +1,6 @@
 # Collections
-## Build Collections
-A that creates a collection and/or adds tagged projects to it.
+## Build Collection
+A script that creates a collection and/or adds tagged projects to it.
 
 ## Use Case
 Collections allow snyk projects within a given organisation to be viewed through a single pane of glass. Projects may
@@ -8,20 +8,40 @@ be tagged in order to provide a key that identifies them as a collective. These 
 collection.
 
 ## Call predicate
-build_collection -a \<snyk-auth-token\> -v "snyk-rest-api-version" -g "snyk-group-name" -o "snyk-org-name" -c "squad-3" -t "tag-name:tag-value" -s "critical,high"
+build_collection -a \<snyk-auth-token\> -v "snyk-rest-api-version" -g "snyk-group-name" -o "snyk-org-name" -c "collection-name" -t "tag-name:tag-value"
 
 ## Example usage:
 #### Full argument names
 build_collection --snyk_token \<snyk-auth-token\> 
-    --grp_name "kevin.matthews Group" --org_name "PR Test Org" --collection_name="squad-3" --project_tags "squad-name:squad-3" --effective_severity_level="critical,high"  --api_ver "2024-01-23"
+    --grp_name "kevin.matthews Group" --org_name "PR Test Org" --collection_name="squad-3" --project_tags "squad-name:squad-3" --api_ver "2024-01-23"
 ##### Assuming default arg values where possible
 build_collection --snyk_token \<snyk-auth-token\> 
     --grp_name "kevin.matthews Group" --org_name "PR Test Org" --collection_name="squad-3" --project_tags "squad-name:squad-3"
 
-#### Argument flags
-build_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -t "squad-name:squad-3" -s "critical,high" -v "2024-01-23"
+
+## Remove Collection
+A script that deletes a named collection.
+
+## Use Case
+A collection abstracts a view of assigned projects. You need to delete the collection.
+
+## Call predicate
+remove_collection -a \<snyk-auth-token\> -v "snyk-rest-api-version" -g "snyk-group-name" -o "snyk-org-name" -c "squad-3"
+
+## Example usage:
+#### Full argument names
+remove_collection --snyk_token \<snyk-auth-token\> 
+    --grp_name "kevin.matthews Group" --org_name "PR Test Org" --collection_name="squad-3" --api_ver "2024-01-23"
 ##### Assuming default arg values where possible
-build_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -t "squad-name:squad-3"
+remove_collection --snyk_token \<snyk-auth-token\> 
+    --grp_name "kevin.matthews Group" --org_name "PR Test Org" --collection_name="squad-3" 
+
+
+
+#### Argument flags
+remove_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -v "2024-01-23"
+##### Assuming default arg values where possible
+remove_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3"
 
 ### Arguments
 - --snyk_token <snyk_auth_token>
