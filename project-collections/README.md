@@ -1,6 +1,8 @@
 # Collections
 ## Build Collection
-A script that creates a collection and/or adds tagged projects to it.
+A script that creates a collection and/or adds tagged projects to it. The collection is created if it does not exist.
+If the collection exists already, the script continues to add projects with the specified tag to it. If the projects
+exist within the collection, the script continues to add the next project to the collection.
 
 ## Use Case
 Collections allow snyk projects within a given organisation to be viewed through a single pane of glass. Projects may
@@ -20,7 +22,8 @@ build_collection --snyk_token \<snyk-auth-token\>
 
 
 ## Remove Collection
-A script that deletes a named collection.
+A script that deletes a named collection. This is the brut force full delete of the collection. This script does not 
+delete a sub-set of the projects within the collection.
 
 ## Use Case
 A collection abstracts a view of assigned projects. You need to delete the collection.
