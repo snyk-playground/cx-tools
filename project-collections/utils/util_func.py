@@ -17,19 +17,9 @@ def next_page(response):
 
 
 
-def build_collection(headers, args):
+def process_collection(headers, args, func):
     # Retrieve all my groups
     g_response = json.loads(utils.rest_api.groups(headers, args["api_ver"]))
-
-    # dictionary for all the issues within the tagged projects
-    tp_issues = {}
-
-    # Parse the list of tag values that identify projects of interest
-    projects_of_interest = []
-    tag_values = []
-    tags = args["project_tags"].split(",")
-    for tag in tags:
-        tag_values.append(tag)
 
     # Iterate to the named group
     for group in g_response['data']:
@@ -44,27 +34,15 @@ def build_collection(headers, args):
 
                         # Find the collection id
                         collection_id = find_collection(headers, args, org)
-                        op_pagination = None
-                        while True:
-                            # Use of the project_tags ensures only those with the right tag are returned
-                            op_response = json.loads(
-                                utils.rest_api.org_projects(headers, args["api_ver"], org,
-                                                            args["project_tags"], op_pagination))
 
-                            for project in op_response['data']:
-                                # iterate over the tags in each project and persist it i it has one of the tags
-                                # of interest
-                                utils.rest_api.add_project_to_collection(headers, args, org, collection_id, project)
-
-                            # Next page?
-                            op_pagination = next_page(op_response)
-                            if op_pagination is None:
-                                break
+                        # Do the collection process within the passed function
+                        func(headers, args, org, collection_id)
 
                 # Next page?
                 go_pagination = next_page(go_response)
                 if go_pagination is None:
                     break
+
 
 
 def find_collection(headers, args, org):

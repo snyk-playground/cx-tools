@@ -50,6 +50,13 @@ def add_project_to_collection(headers, args, org, collection_id, project):
     return response.text
 
 
+def remove_collection(headers, args, org, collection_id):
+    url = 'https://api.snyk.io/rest/orgs/{0}/collections/{1}?version={2}'.format(org['id'], collection_id, args["api_ver"])
+    response = requests.request("DELETE", url, headers=headers)
+    return response.text
+
+
+
 def get_collections(headers, api_ver, org, pagination):
 
     if pagination is None:
