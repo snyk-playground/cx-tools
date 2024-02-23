@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 import utils.util_func
 
@@ -10,12 +9,18 @@ def get_arguments():
     parser.add_argument('-a', '--snyk_token', required=True)
     parser.add_argument('-g', '--grp_name', required=True)
     parser.add_argument('-o', '--org_name', required=True)
-    parser.add_argument('-t', '--project_tags', required=True)
+    parser.add_argument('-c', '--collection_name', required=True)
     parser.add_argument('-v', '--api_ver', default="2024-01-23")
-    parser.add_argument('-s', '--effective_severity_level', default="critical,high")
 
     args = vars(parser.parse_args())
     return args
+
+
+def remove_collection(headers, args, org, collection_id):
+    utils.rest_api.remove_collection(headers, args, org, collection_id)
+
+
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -28,4 +33,6 @@ if __name__ == '__main__':
       'Authorization': 'token {0}'.format(os.getenv('SNYK_TOKEN'))
     }
 
-    utils.util_func.tagged_project_issues(headers, args)
+    utils.util_func.process_collection(headers, args, remove_collection)
+
+

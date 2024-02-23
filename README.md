@@ -8,6 +8,7 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 
 
 # Scripts
+- [How to build a collection of tagged projects](project-collections)
 - [How to extract all issues pertinent to a tagged project](tagged-project-issues)
 - ["Remediation Advice" for Snyk Container](scripts/Remediation-container.md)
 - [Dependencies by project CSV](scripts/dependencies-csv.md)
