@@ -21,4 +21,16 @@ The algorithm used by this example is as follows:
 ```
 
 The script outputs a list of the org/targets that were deleted (or
-would have been deleted, if using `--dry-run`) to `stdout`, one per line.
+would have been deleted, if omitting `--delete` flag) to `stdout`, one per line.
+
+Example use:
+
+dry-run:
+```bash
+python3 rm-empty-targets.py $SNYK_GROUP_ID
+```
+
+actual deleting:
+```bash
+python3 rm-empty-targets.py $SNYK_GROUP_ID --delete
+```
