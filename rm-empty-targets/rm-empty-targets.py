@@ -20,6 +20,13 @@ key_snykgroup = "snyk_group"
 key_snyk_rest_api = "snyk_rest_api"
 key_concurrent_connection_limit = "concurrent_connection_limit"
 
+##############################
+
+# change this value to match the Snyk REST API version used:
+key_api_version = "2024-01-23~beta"
+
+##############################
+
 async def main():
   session = None
   try:
@@ -40,7 +47,7 @@ async def main():
     # Use pysnyk clients for the v1 and rest APIs
     # this sets the session to include retries in case of api timeouts etc
     v1client = snyk.SnykClient(snyktoken, tries=3, delay=1, backoff=2)
-    restclient = snyk.SnykClient(snyktoken, version="experimental", url="https://api.snyk.io/rest", tries=3, delay=1,
+    restclient = snyk.SnykClient(snyktoken, version=(key_api_version), url="https://api.snyk.io/rest", tries=3, delay=1,
                                  backoff=2)
 
     # Use aiohttp connection for new REST APIs not yet supported by pysnyk
@@ -99,7 +106,7 @@ def get_config():
         return config
 
   is_dry_run = True
-  try:
+  try: 
     unsafe_mode = sys.argv[2]
     if unsafe_mode == "--delete":
       is_dry_run = False
@@ -159,12 +166,15 @@ async def delete_empty_targets_for_orgs(orgs, restclient, session, config):
     log(f"deleting {count_targets} target(s)...")
     log("")
 
+    total_count_deleted = 0
     count_deleted = 0
     try:
       for target_org in empty_targets:
         count_deleted = await delete_empty_targets(session, config[key_snyk_rest_api], target_org, empty_targets[target_org])
+        if count_deleted > 0:
+          total_count_deleted += count_deleted
     finally:
-      status_msg = f"{count_deleted} target(s) deleted."
+      status_msg = f"{total_count_deleted} target(s) deleted."
 
   log("")
   log(status_msg)
@@ -203,8 +213,8 @@ def get_empty_targets(restclient, org_id):
 async def delete_empty_targets(session, snyk_api, org_id, targets):
   # delete the list of empty targets in the specified org
 
-  api_endpoint_version = "experimental"
-  params = [('version', api_endpoint_version)]
+  # api_endpoint_version = "2024-01-23~beta"
+  params = [('version', key_api_version)]
   count_deleted = 0
 
   for target in targets:
