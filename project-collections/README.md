@@ -55,3 +55,7 @@ remove_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test O
 - --effective_severity_level "Comma separated list of severities to be identified in tagged project issues payload"
 - --api_ver "The version of the Snyk API to be used (default recommended)"
 
+### Note 
+Some of the APIs used are in beta. Others are GA. As the beta's become GA, I will remove the 'hard-coded' use of their 
+beta counterparts. Meantime, please DO NOT specify a beta version of an API should you wish to choose a specific 
+version. It is recommended at this time that you allow the default version to be used.
