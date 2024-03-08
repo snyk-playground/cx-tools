@@ -21,28 +21,32 @@ def process_collection(headers, args, func):
     # Retrieve all my groups
     g_response = json.loads(utils.rest_api.groups(headers, args["api_ver"]))
 
-    # Iterate to the named group
-    for group in g_response['data']:
-        if group['attributes']['name'] == args['grp_name']:
-            go_pagination = None
-            while True:
-                go_response = json.loads(utils.rest_api.group_orgs(headers, args["api_ver"], group, go_pagination))
+    try:
+        # Iterate to the named group
+        for group in g_response['data']:
+            if group['attributes']['name'] == args['grp_name']:
+                go_pagination = None
+                while True:
+                    go_response = json.loads(utils.rest_api.group_orgs(headers, args["api_ver"], group, go_pagination))
 
-                # Iterate to the named Org
-                for org in go_response['data']:
-                    if org['attributes']['name'] == args["org_name"]:
+                    # Iterate to the named Org
+                    for org in go_response['data']:
+                        if org['attributes']['name'] == args["org_name"]:
 
-                        # Find the collection id
-                        collection_id = find_collection(headers, args, org)
+                            # Find the collection id
+                            collection_id = find_collection(headers, args, org)
 
-                        # Do the collection process within the passed function
-                        func(headers, args, org, collection_id)
+                            # Do the collection process within the passed function
+                            func(headers, args, org, collection_id)
 
-                # Next page?
-                go_pagination = next_page(go_response)
-                if go_pagination is None:
-                    break
-
+                    # Next page?
+                    go_pagination = next_page(go_response)
+                    if go_pagination is None:
+                        break
+    except Exception:
+        print("GET call to /groups API returned no 'data'")
+        print(json.dumps(g_response, indent=4))
+        return
 
 
 def find_collection(headers, args, org):
