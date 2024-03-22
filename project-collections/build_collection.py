@@ -35,21 +35,27 @@ def next_page(response):
 
 def add_proj_to_collection(headers, args, org, collection_id):
     op_pagination = None
-    while True:
-        # Use of the project_tags ensures only those with the right tag are returned
-        op_response = json.loads(
-            utils.rest_api.org_projects(headers, args["api_ver"], org,
-                                        args["project_tags"], op_pagination))
+    op_response = None
+    try:
+        while True:
+            # Use of the project_tags ensures only those with the right tag are returned
+            op_response = json.loads(
+                utils.rest_api.org_projects(headers, args["api_ver"], org,
+                                            args["project_tags"], op_pagination))
 
-        for project in op_response['data']:
-            # iterate over the tags in each project and persist it i it has one of the tags
-            # of interest
-            utils.rest_api.add_project_to_collection(headers, args, org, collection_id, project)
+            for project in op_response['data']:
+                # iterate over the tags in each project and persist it i it has one of the tags
+                # of interest
+                utils.rest_api.add_project_to_collection(headers, args, org, collection_id, project)
 
-        # Next page?
-        op_pagination = next_page(op_response)
-        if op_pagination is None:
-            break
+            # Next page?
+            op_pagination = next_page(op_response)
+            if op_pagination is None:
+                break
+    except Exception:
+        print("POST call to /collections - Unable to build collection")
+        print(json.dumps(op_response, indent=4))
+        return
 
 
 

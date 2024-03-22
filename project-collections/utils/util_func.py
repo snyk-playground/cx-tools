@@ -31,13 +31,16 @@ def process_collection(headers, args, func):
 
                     # Iterate to the named Org
                     for org in go_response['data']:
-                        if org['attributes']['name'] == args["org_name"]:
+                        if org['attributes']['name'] == args["org_name"] or org['attributes']['slug'] == args["org_name"]:
 
                             # Find the collection id
                             collection_id = find_collection(headers, args, org)
 
                             # Do the collection process within the passed function
                             func(headers, args, org, collection_id)
+
+                            # Now the named org has been processed, there's no need to continue
+                            return
 
                     # Next page?
                     go_pagination = next_page(go_response)
@@ -53,19 +56,26 @@ def find_collection(headers, args, org):
 
     c_pagination = None
     collections = []
+    response = None
 
-    while True:
-        response = json.loads(utils.rest_api.get_collections(headers, args["api_ver"], org, c_pagination))
-        collections = collections + response["data"]
+    try:
+        while True:
+            response = json.loads(utils.rest_api.get_collections(headers, args["api_ver"], org, c_pagination))
+            collections = collections + response["data"]
 
-        # Next page?
-        c_pagination = next_page(response)
-        if c_pagination is None:
-            break
+            # Next page?
+            c_pagination = next_page(response)
+            if c_pagination is None:
+                break
 
-    for coll in response["data"]:
-        if coll['attributes']['name'] == args["collection_name"]:
-            return coll['id']
+        for coll in response["data"]:
+            if coll['attributes']['name'] == args["collection_name"]:
+                return coll['id']
 
-    return utils.rest_api.create_a_collection(headers, args, org)
+        return utils.rest_api.create_a_collection(headers, args, org)
+    except Exception:
+        print("GET call to /collections API returned no 'data'")
+        print(json.dumps(response, indent=4))
+        return
+
 
