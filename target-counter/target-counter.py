@@ -41,7 +41,7 @@ async def main():
     # Use pysnyk clients for the v1 and rest APIs
     # this sets the session to include retries in case of api timeouts etc
     v1client = snyk.SnykClient(snyktoken, tries=3, delay=1, backoff=2)
-    restclient = snyk.SnykClient(snyktoken, version="experimental", url="https://api.snyk.io/rest", tries=3, delay=1,
+    restclient = snyk.SnykClient(snyktoken, version="2024-04-22", url="https://api.snyk.io/rest", tries=3, delay=1,
                                  backoff=2)
 
     # Use aiohttp connection for new REST APIs not yet supported by pysnyk
@@ -174,7 +174,7 @@ async def count_targets_for_orgs(orgs, restclient, session, config):
       #log(f"Checking {org.id} [ \"{org.name}\" | {org.slug} ]")
       targets = get_org_targets(restclient, org.id)
       for origin in origins:
-          origin_targets = [ target for target in targets if target['attributes']['origin'] == origin ]
+          origin_targets = [ target for target in targets if target['relationships']['integration']['data']['attributes']['integration_type'] == origin ]
           count_targets[origin] += len(origin_targets)
 
   return count_targets
@@ -183,18 +183,13 @@ async def count_targets_for_orgs(orgs, restclient, session, config):
 #######################################################################
 
 def get_org_targets(restclient, org_id):
-  # return a list of empty targets for an org
-  # 2022-03-10: There is not currently a filter to get just the empty
-  #             targets, so we need to get both all of the targets and
-  #             all non-empty targets, and then diff the lists to
-  #             create the list of empty targets
 
   org_targets = f"orgs/{org_id}/targets"
 
-  params = {"limit": 100, "excludeEmpty": True }
-  targets_with_projects = restclient.get_rest_pages(org_targets, params=params)
+  params = {"limit": 100, "exclude_empty": False } # counts all targets, even if empty
+  targets = restclient.get_rest_pages(org_targets, params=params)
 
-  return targets_with_projects
+  return targets
 
 #######################################################################
 
