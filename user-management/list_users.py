@@ -18,9 +18,9 @@ def get_arguments():
 
     args = vars(parser.parse_args())
     if args["roles"] != None:
-        args["roles"]=args["roles"].split(',')
+        args["roles"]=args["roles"].replace(" ","").split(',')
     if args["org_names"] != None:
-        args["org_names"]=args["org_names"].split(',')
+        args["org_names"]=args["org_names"].replace(" ","").split(',')
     return args
 
 
