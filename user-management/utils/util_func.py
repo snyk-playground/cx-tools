@@ -21,6 +21,13 @@ def org_of_interest(orgs, orgname):
         return True
     return False
 
+
+
+def scoped_roles(member):
+    if member['role']:
+        return True
+    return False
+
 def parse_users(headers, args):
     # Retrieve all my groups
     g_response = json.loads(utils.rest_api.groups(headers, args["api_ver"]))
@@ -39,7 +46,12 @@ def parse_users(headers, args):
                         if org_of_interest(args["org_names"], org['attributes']['name']):
 
                             # Parse the users
-                            orgs_members[org['attributes']['name']]=json.loads(utils.snyk_api.org_members(headers, org['id']))
+                            scoped_members = []
+                            all_members = json.loads(utils.snyk_api.org_members(headers, org['id']))
+                            for member in all_members:
+                                if member['role'] in args['roles']:
+                                    scoped_members.append(member)
+                            orgs_members[org['attributes']['name']]=scoped_members
 
                     # Next page?
                     go_pagination = next_page(go_response)
@@ -48,7 +60,9 @@ def parse_users(headers, args):
 
         print(json.dumps(orgs_members, indent=4))
 
-    except Exception :
+
+    except UnboundLocalError as err:
+        print(err)
         print("GET call to /groups API returned no 'data'")
         print(json.dumps(g_response, indent=4))
         return

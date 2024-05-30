@@ -12,11 +12,13 @@ def get_arguments():
     parser.add_argument('-a', '--snyk_token', required=True)
     parser.add_argument('-g', '--grp_name', required=True)
     parser.add_argument('-o', '--org_names', default=None)
-    # parser.add_argument('-s', '--scope', required=True)
-    parser.add_argument('-v', '--api_ver', default="2024-01-23")
+    parser.add_argument('-r', '--roles', required=True)
+    parser.add_argument('-v', '--api_ver', default="2024-05-23")
 
 
     args = vars(parser.parse_args())
+    if args["roles"] != None:
+        args["roles"]=args["roles"].split(',')
     if args["org_names"] != None:
         args["org_names"]=args["org_names"].split(',')
     return args
