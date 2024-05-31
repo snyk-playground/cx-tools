@@ -1,3 +1,5 @@
+![snyk-oss-category](https://github.com/snyk-labs/oss-images/blob/main/oss-example.jpg)
+
 # User Management
 ## List Users
 A script to list all users within all or selected named orgs that assume specified roles. 
