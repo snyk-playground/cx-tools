@@ -134,7 +134,7 @@ async def get_group_users(session,config):
 def get_userlist_dataframe(snykgroup, users):
     userlist = ["group_id,user_email,user_name,user_id\n"]
     for user in users:
-        userlist.append(f"{snykgroup},{user['email']},{user['username']},{user['id']}\n")
+        userlist.append(f"{snykgroup},{user['email']},{user['username']},{user['id']},{user['groupRole']}\n")
         buffer = ''.join(userlist)
     df = pd.read_csv(StringIO(buffer),header=0,sep=",")
     df.sort_values(by=['user_email'], inplace=True)
