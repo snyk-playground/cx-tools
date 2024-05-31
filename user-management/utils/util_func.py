@@ -23,11 +23,6 @@ def org_of_interest(orgs, orgname):
 
 
 
-def scoped_roles(member):
-    if member['role']:
-        return True
-    return False
-
 def parse_users(headers, args):
     # Retrieve all my groups
     g_response = json.loads(utils.rest_api.groups(headers, args["api_ver"]))

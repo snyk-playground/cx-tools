@@ -20,11 +20,6 @@ list_users --snyk_token \<snyk-auth-token\> --grp_name "kevin.matthews Group" --
 list_users --snyk_token \<snyk-auth-token\> --grp_name "kevin.matthews Group" --roles "admin,collaborator"
 
 
-#### Argument flags
-remove_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3" -v "2024-01-23"
-##### Assuming default arg values where possible
-remove_collection -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Test Org" -c "squad-3"
-
 ### Arguments
 - --snyk_token <snyk_auth_token>
 - --grp_name "Snyk group name in which tagged projects are to be parsed"
