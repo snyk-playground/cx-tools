@@ -33,6 +33,7 @@ def parse_integrations(headers, args):
             # Retrieve all my groups
             g_response = json.loads(utils.rest_api.groups(headers, args["api_ver"], g_pagination))
 
+            go_response = None
             try:
                 # Iterate to the named group
                 for group in g_response['data']:
@@ -60,10 +61,10 @@ def parse_integrations(headers, args):
                             if go_pagination is None:
                                 break
 
-            except Exception as err:
+            except UnboundLocalError as err:
                 print(err)
-                print("GET call to /groups API returned no 'data'")
-                print(json.dumps(g_response, indent=4))
+                print("GET call to /orgs API returned no 'data'")
+                print(json.dumps(go_response, indent=4))
 
             # Next page?
             g_pagination = next_page(g_response)
