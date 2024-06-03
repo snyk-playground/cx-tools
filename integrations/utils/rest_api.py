@@ -4,8 +4,12 @@ import requests
 
 
 # Retrieve all group I belong to
-def groups(headers, api_ver):
-    url = 'https://api.snyk.io/rest/groups?version={0}~beta'.format(api_ver)
+def groups(headers, api_ver, pagination):
+    if pagination is None:
+        url = 'https://api.snyk.io/rest/groups?version={0}~beta'.format(api_ver)
+    else:
+        url = 'https://api.snyk.io/rest/groups?version={0}~beta&starting_after={1}'.format(api_ver, pagination)
+
     return requests.request("GET", url, headers=headers).text
 
 
