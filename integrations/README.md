@@ -1,7 +1,7 @@
 ![snyk-oss-category](https://github.com/snyk-labs/oss-images/blob/main/oss-example.jpg)
 
 # Integrations
-## Integration Setting
+## Parse Integrations
 A script to list all integration settings within all or selected named orgs. 
 This script pertains to a single named group.
 
