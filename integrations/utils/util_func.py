@@ -53,7 +53,7 @@ def parse_integrations(headers, args):
 
                                     # Collate the integration settings by name within the org
                                     for org_int in org_ints_response:
-                                        settings = utils.snyk_api.org_int_settings(headers, org['id'], org_ints_response[org_int])
+                                        settings = utils.snyk_api.get_org_integration_settings(headers, org['id'], org_ints_response[org_int])
                                         orgs_integrations[org['attributes']['name']][org_int] = json.loads(settings)
 
                             # Next page?
