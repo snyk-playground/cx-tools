@@ -22,7 +22,7 @@ def get_all_targets(org_id):
     Returns:
         list: A list of all target data dictionaries.
     """
-    url = f'https://api.snyk.io/rest/orgs/{org_id}/targets?version={API_VERSION}'
+    url = f'https://api.snyk.io/rest/orgs/{org_id}/targets?version={API_VERSION}&exclude_empty=false'
     all_targets = []
     while url:
         response = requests.get(url, headers=HEADERS)
