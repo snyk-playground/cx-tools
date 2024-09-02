@@ -1,8 +1,8 @@
 import argparse
 import os
+import json
 
-import utils.util_func
-
+from integrations.utils.util_func import parse_integrations
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='This script enables you to configure IQ Server from JSON\
@@ -24,15 +24,16 @@ def get_arguments():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-
     args = get_arguments()
     os.environ['SNYK_TOKEN'] = args['snyk_token']
+    integrations = parse_integrations(args)
+    if args["org_names"] is None:
+        filename = os.getcwd()+"/"+args["grp_name"]+"_integrations.json"
+    else:
+        filename = os.getcwd()+"/"+args["grp_name"]+"--"+''.join(args["org_names"])+"_Snyk_Integrations.json"
 
-    headers = {
-      'Content-Type': 'application/vnd.api+json',
-      'Authorization': 'token {0}'.format(os.getenv('SNYK_TOKEN'))
-    }
+    with open(filename, "w") as outfile:
+       json.dump(integrations, outfile, indent=4)
 
-    utils.util_func.parse_integrations(headers, args)
 
 

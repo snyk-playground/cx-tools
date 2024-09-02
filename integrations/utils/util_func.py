@@ -1,8 +1,12 @@
 import json
 import urllib.parse
-import utils.rest_api
-import utils.snyk_api
 
+from integrations.utils.rest_api import group_orgs
+from integrations.utils.rest_api import groups
+from integrations.utils.snyk_api import org_integrations
+from integrations.utils.snyk_api import get_org_integration_settings
+
+CFG_DELIMETER = "::"
 
 def next_page(response):
     # response['links']['next']
@@ -23,7 +27,8 @@ def org_of_interest(orgs, orgname):
 
 
 
-def parse_integrations(headers, args):
+# Parse all the integrations for orgs of interest to a group scoped file
+def parse_integrations(args):
     orgs_integrations = dict()
     g_response = None
 
@@ -31,7 +36,7 @@ def parse_integrations(headers, args):
         g_pagination = None
         while True:
             # Retrieve all my groups
-            g_response = json.loads(utils.rest_api.groups(headers, args["api_ver"], g_pagination))
+            g_response = json.loads(groups(args["api_ver"], g_pagination))
 
             go_response = None
             try:
@@ -40,21 +45,22 @@ def parse_integrations(headers, args):
                     if group['attributes']['name'] == args['grp_name']:
                         go_pagination = None
                         while True:
-                            go_response = json.loads(utils.rest_api.group_orgs(headers, args["api_ver"], group, go_pagination))
+                            go_response = json.loads(group_orgs(args["api_ver"], group, go_pagination))
 
                             # Iterate to the named Org
                             for org in go_response['data']:
                                 if org_of_interest(args["org_names"], org['attributes']['name']):
 
                                     # Parse the integrations
-                                    org_ints_response = json.loads(
-                                        utils.snyk_api.org_integrations(headers, org['id']))
-                                    orgs_integrations[org['attributes']['name']] = {}
+                                    org_ints_response = json.loads(org_integrations(org['id']))
+                                    orgs_integrations[org["attributes"]["name"]+CFG_DELIMETER+org["id"]] = {}
 
                                     # Collate the integration settings by name within the org
                                     for org_int in org_ints_response:
-                                        settings = utils.snyk_api.get_org_integration_settings(headers, org['id'], org_ints_response[org_int])
-                                        orgs_integrations[org['attributes']['name']][org_int] = json.loads(settings)
+                                        settings = json.loads(get_org_integration_settings(org['id'], org_ints_response[org_int]))
+                                        orgs_integrations[org['attributes']['name']+CFG_DELIMETER+org["id"]] \
+                                            [org_int+CFG_DELIMETER+org_ints_response[org_int]] = settings
+
 
                             # Next page?
                             go_pagination = next_page(go_response)
@@ -65,6 +71,8 @@ def parse_integrations(headers, args):
                 print(err)
                 print("GET call to /orgs API returned no 'data'")
                 print(json.dumps(go_response, indent=4))
+            except TypeError as err:
+                print(err)
 
             # Next page?
             g_pagination = next_page(g_response)
@@ -75,7 +83,23 @@ def parse_integrations(headers, args):
         print("GET call to /groups API returned no 'data'")
         print(json.dumps(g_response, indent=4))
     finally:
-        print(json.dumps(orgs_integrations, indent=4))
-        return
+        return orgs_integrations
 
 
+def update_integrations(args):
+    orgs = {}
+    g_response = None
+
+    #try:
+    name = "/Users/kevinmatthews/cx-tools/integrations/"+args["grp_name"]+"_integrations.json"
+    f = open(name)
+    orgs = json.load(f)
+
+    for org in orgs:
+        print(org)
+        print(json.dumps(orgs[org], indent=4))
+        for integration in orgs[org]:
+            print(json.dumps(integration, indent=4))
+    #finally:
+        #print(json.dumps(orgs_integrations, indent=4))
+    #    return
