@@ -28,7 +28,7 @@ RATE_LIMIT_DELAY = 0.2 (in seconds)
 Run the script locally
 
 ```sh
-python3 get_projects_v2.py --group YOUR_GROUP_ID --token your_api_token
+python3 get_projects.py --group YOUR_GROUP_ID --token your_api_token
 ```
 
 Script will output `project_data.json` file. Edit the file as necessary. Example below
