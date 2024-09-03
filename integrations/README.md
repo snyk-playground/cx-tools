@@ -6,6 +6,14 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 </div>
 <br/>
 
+### Environment:
+Ensure that the 'cx-tools' directory is included in your PYTHONPATH environment variable. This ensures that the import 
+statements for modules in sub folders are resolved.
+
+````
+    cd cx-tools
+    export PYTHONPATH=`pwd`
+````
 
 # Parse Integrations
 This utility allows Snyk customers to persist the configuration settings for their integrations to a file. Persisted
@@ -14,13 +22,15 @@ org name and integration name are augmented by their internal Snyk id(s). These 
 
 ## How to call parse_integrations.py
 ````
-python3 parse_integrations.py
+Run from the cx-tools directory.
+
+python3 ./integrations/parse_integrations.py
     --snyk_token="<snyk-token-value>" 
     --grp_name="<snyk-group-name>"
     --org_names="<target-snyk-org-name1,target-snyk-org-name2>" 
     --api_ver="<snyk-rest-api-version>"
 
-python3 parse_integrations.py
+python3 ./integrations/parse_integrations.py
     --snyk_token="<snyk-token-value>" 
     --grp_name="kevin.matthews Group"
     --org_names="Org1,Org2" 
@@ -38,17 +48,20 @@ guidance as to what configuration settings align with your requirements at this 
 
 ## How to call update_integrations.py
 ````
-python3 update_integrations.py
+Run from the cx-tools directory.
+
+python3 ./integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config_file="<json-config-filename>"
     --api_ver="<snyk-rest-api-version>"
 
-python3 update_integrations.py
+python3 ./integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config_file="kevin.matthews Group--Org1Org2.json"
     --api_ver="2024-08-15"
 
 ````
+
 
 ### Note:
 At the time of writing, I am required to use a mix of GA and beta REST APIs. As the beta APIs become GA, so I will 

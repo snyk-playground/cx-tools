@@ -89,8 +89,9 @@ def parse_integrations(args):
 
 # Update the integrations with the config persisted in a file
 def update_integrations(args):
-    name = args["config_file"]
-    f = open(name)
+    filename = args["config_file"]
+    print(f"Upload data parsed from {filename}")
+    f = open(filename)
     orgs = json.load(f)
 
     for org in orgs:
