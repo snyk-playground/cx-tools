@@ -28,7 +28,7 @@ if __name__ == '__main__':
     os.environ['SNYK_TOKEN'] = args['snyk_token']
     integrations = parse_integrations(args)
     if args["org_names"] is None:
-        filename = os.getcwd()+"/"+args["grp_name"]+"_integrations.json"
+        filename = os.getcwd()+"/"+args["grp_name"]+"_Snyk_Integrations.json"
     else:
         filename = os.getcwd()+"/"+args["grp_name"]+"--"+''.join(args["org_names"])+"_Snyk_Integrations.json"
 
