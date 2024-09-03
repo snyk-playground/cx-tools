@@ -3,11 +3,12 @@ import urllib.parse
 
 from integrations.utils.rest_api import group_orgs
 from integrations.utils.rest_api import groups
-from integrations.utils.snyk_api import org_integrations
+from integrations.utils.snyk_api import org_integrations, update_org_integration_settings
 from integrations.utils.snyk_api import get_org_integration_settings
 
 CFG_DELIMETER = "::"
 
+# Handle pagination
 def next_page(response):
     # response['links']['next']
     try:
@@ -20,14 +21,15 @@ def next_page(response):
         pagination = None
     return pagination
 
+
+# Is the current org in scope?
 def org_of_interest(orgs, orgname):
     if orgs == None or orgname in orgs:
         return True
     return False
 
 
-
-# Parse all the integrations for orgs of interest to a group scoped file
+# Parse all the integrations for a group/specific orgs of interest to a file
 def parse_integrations(args):
     orgs_integrations = dict()
     g_response = None
@@ -61,7 +63,6 @@ def parse_integrations(args):
                                         orgs_integrations[org['attributes']['name']+CFG_DELIMETER+org["id"]] \
                                             [org_int+CFG_DELIMETER+org_ints_response[org_int]] = settings
 
-
                             # Next page?
                             go_pagination = next_page(go_response)
                             if go_pagination is None:
@@ -86,20 +87,14 @@ def parse_integrations(args):
         return orgs_integrations
 
 
+# Update the integrations with the config persisted in a file
 def update_integrations(args):
-    orgs = {}
-    g_response = None
-
-    #try:
-    name = "/Users/kevinmatthews/cx-tools/integrations/"+args["grp_name"]+"_integrations.json"
+    name = args["config_file"]
     f = open(name)
     orgs = json.load(f)
 
     for org in orgs:
-        print(org)
-        print(json.dumps(orgs[org], indent=4))
+        org_id = org.split(CFG_DELIMETER)[1]
         for integration in orgs[org]:
-            print(json.dumps(integration, indent=4))
-    #finally:
-        #print(json.dumps(orgs_integrations, indent=4))
-    #    return
+            integration_id = integration.split(CFG_DELIMETER)[1]
+            update_org_integration_settings(org_id, integration_id, orgs[org][integration])

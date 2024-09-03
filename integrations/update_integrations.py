@@ -7,7 +7,7 @@ def get_arguments():
     parser = argparse.ArgumentParser(description='Script to update Snyk integration settings')
     parser.add_argument('-a', '--snyk_token', required=True)
     parser.add_argument('-c', '--config_file', required=True)
-    parser.add_argument('-v', '--api_ver', default="2024-05-23")
+    parser.add_argument('-v', '--api_ver', required=True)
     args = vars(parser.parse_args())
     return args
 

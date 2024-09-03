@@ -9,8 +9,8 @@ def get_arguments():
      data, thus supporting the config-as-code requirement of Sonatype customers')
     parser.add_argument('-a', '--snyk_token', required=True)
     parser.add_argument('-g', '--grp_name', required=True)
+    parser.add_argument('-v', '--api_ver', required=True)
     parser.add_argument('-o', '--org_names', default=None)
-    parser.add_argument('-v', '--api_ver', default="2024-05-23")
 
     args = vars(parser.parse_args())
     if args["org_names"] != None:

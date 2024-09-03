@@ -1,32 +1,55 @@
 ![snyk-oss-category](https://github.com/snyk-labs/oss-images/blob/main/oss-example.jpg)
 
-# Integrations
-## Parse Integrations
-A script to list all integration settings within all or selected named orgs. 
-This script pertains to a single named group.
-
-## Use Case
-As a TSM I want to understand the maturity of my customer in terms of Snyk adoption. Parsing the integration settings
-enables me to assess adoption maturity and identify recommendation to achieve increased maturity.
-
-## Call predicate
-Integrations -a \<snyk-auth-token\> -g "Group" -o <org_name_1>,<org_name_2> -v "2024-05-23"
-
-## Example usage:
-#### Full argument names
-Integrations --snyk_token \<snyk-auth-token\> --grp_name "kevin.matthews Group" --org_name Test_1,Test_2 -v "2024-05-23"
-
-##### Assuming default arg values where possible
-Integrations --snyk_token \<snyk-auth-token\> --grp_name "kevin.matthews Group"
+<br/>
+<div align="center">
+This is a list of examples and scripts compiled by the Snyk Customer Experience teams for the purpose of solving specific use cases raised by customers.
+</div>
+<br/>
 
 
-### Arguments
-- --snyk_token <snyk_auth_token>
-- --grp_name "Snyk group name in which tagged projects are to be parsed"
-- --org_names "Snyk org name(s) in which tagged projects are to be parsed. Comma delimited."
-- --api_ver "The version of the Snyk API to be used (default recommended)"
+# Parse Integrations
+This utility allows Snyk customers to persist the configuration settings for their integrations to a file. Persisted
+data may be for a single group (all orgs) or a comma delimited list of orgs within that group. When persisted, the 
+org name and integration name are augmented by their internal Snyk id(s). These id(s) are parsed by the update script.
 
-### Note 
-Some of the APIs used are in beta. Others are GA. As the beta's become GA, it will become necessary to remove the 'hard-coded' use of their 
-beta counterparts. Meantime, please DO NOT specify a beta version of an API should you wish to choose a specific 
-version. It is recommended at this time that you allow the default version to be used.
+## How to call parse_integrations.py
+````
+python3 parse_integrations.py
+    --snyk_token="<snyk-token-value>" 
+    --grp_name="<snyk-group-name>"
+    --org_names="<target-snyk-org-name1,target-snyk-org-name2>" 
+    --api_ver="<snyk-rest-api-version>"
+
+python3 parse_integrations.py
+    --snyk_token="<snyk-token-value>" 
+    --grp_name="kevin.matthews Group"
+    --org_names="Org1,Org2" 
+    --api_ver="2024-08-15"
+
+Note that the org_names argument is optional.
+````
+
+# Update Integrations
+
+After bulk editing the configuration pertaining to their integrations offline, this utility allows Snyk customers 
+to upload that configuration at scale across their Snyk deployment. The persisted json file can be edited to ensure 
+configuration that is aligned to the customer's DevSecOps maturity and ambitions. Speak with the TSM team for 
+guidance as to what configuration settings align with your requirements at this time.
+
+## How to call update_integrations.py
+````
+python3 update_integrations.py
+    --snyk_token="<snyk-token-value>" 
+    --config_file="<json-config-filename>"
+    --api_ver="<snyk-rest-api-version>"
+
+python3 parse_integrations.py
+    --snyk_token="<snyk-token-value>" 
+    --config_file="kevin.matthews Group--Org1Org2.json"
+    --api_ver="2024-08-15"
+
+````
+
+### Note:
+At the time of writing, I am required to use a mix of GA and beta REST APIs. As the beta APIs become GA, so I will 
+update this software.

@@ -11,7 +11,7 @@ def build_headers():
     return headers
 
 
-# Retrieve all group I belong to
+# Retrieve all group(s) I belong to
 def groups(api_ver, pagination):
     if pagination is None:
         url = 'https://api.snyk.io/rest/groups?version={0}~beta'.format(api_ver)
