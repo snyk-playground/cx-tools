@@ -43,7 +43,7 @@ python3 update_integrations.py
     --config_file="<json-config-filename>"
     --api_ver="<snyk-rest-api-version>"
 
-python3 parse_integrations.py
+python3 update_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config_file="kevin.matthews Group--Org1Org2.json"
     --api_ver="2024-08-15"
