@@ -13,31 +13,27 @@ def build_headers():
 
 def org_integrations(org_id):
     response = None
-    try:
-        url = 'https://api.snyk.io/v1/org/{0}/integrations'.format(org_id)
-        response = requests.request("GET", url, headers=build_headers()).text
-        return response
-    except Exception:
-        print(json.dumps(response, indent=4))
+    url = 'https://api.snyk.io/v1/org/{0}/integrations'.format(org_id)
+    response = requests.request("GET", url, headers=build_headers())
+    if response.status_code != 200:
+        print(response.text)
+    return response.text
 
 
 def get_org_integration_settings(org_id, integration_id):
     response = None
-    try:
-        url = 'https://api.snyk.io/v1/org/{0}/integrations/{1}/settings'.format(org_id, integration_id)
-        response = requests.request("GET", url, headers=build_headers()).text
-        return response
-    except Exception:
-        print(json.dumps(response, indent=4))
+    url = 'https://api.snyk.io/v1/org/{0}/integrations/{1}/settings'.format(org_id, integration_id)
+    response = requests.request("GET", url, headers=build_headers())
+    if response.status_code != 200:
+        print(response.text)
+    return response.text
 
 
 # Update the config settings for a specified org and integration id
 def update_org_integration_settings(org_id, integration_id, values):
     response = None
-    try:
-        url = 'https://api.snyk.io/v1/org/{0}/integrations/{1}/settings'.format(org_id, integration_id)
-        response = requests.put(url, headers=build_headers(), json=values)
-        if response.status_code != 200:
-            print(response.text)
-    except Exception:
-        print(json.dumps(response, indent=4))
+    url = 'https://api.snyk.io/v1/org/{0}/integrations/{1}/settings'.format(org_id, integration_id)
+    response = requests.put(url, headers=build_headers(), json=values)
+    if response.status_code != 200:
+        print(response.text)
+    return response.text

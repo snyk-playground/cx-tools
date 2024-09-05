@@ -18,7 +18,10 @@ def groups(api_ver, pagination):
     else:
         url = 'https://api.snyk.io/rest/groups?version={0}~beta&starting_after={1}'.format(api_ver, pagination)
 
-    return requests.request("GET", url, headers=build_headers()).text
+    response = requests.request("GET", url, headers=build_headers())
+    if response.status_code != 200:
+        print(response.text)
+    return response.text
 
 
 # Retrieve all orgs within the identified group
@@ -29,6 +32,8 @@ def group_orgs(api_ver, grp, pagination):
         url = 'https://api.snyk.io/rest/groups/{0}/orgs?version={1}&starting_after={2}'.format(grp['id'], api_ver,
                                                                                                pagination)
     response = requests.request("GET", url, headers=build_headers())
+    if response.status_code != 200:
+        print(response.text)
     return response.text
 
 
