@@ -1,5 +1,6 @@
 import json
 import urllib.parse
+import jsoncomparison
 
 from integrations.utils.rest_api import group_orgs
 from integrations.utils.rest_api import groups
@@ -89,13 +90,46 @@ def parse_integrations(args):
 
 # Update the integrations with the config persisted in a file
 def update_integrations(args):
-    filename = args["config_file"]
-    print(f"Upload data parsed from {filename}")
-    f = open(filename)
-    orgs = json.load(f)
+    my_config = args["config_file"]
+    orgs = load_json_file(my_config)
+    print(f"Upload data parsed from {my_config}")
 
     for org in orgs:
         org_id = org.split(CFG_DELIMETER)[1]
         for integration in orgs[org]:
             integration_id = integration.split(CFG_DELIMETER)[1]
             update_org_integration_settings(org_id, integration_id, orgs[org][integration])
+
+
+# Utility fundtion to load json object from a file
+def load_json_file(filename):
+    try:
+        f = open(filename)
+        orgs = json.load(f)
+        return orgs
+    except FileNotFoundError as err:
+        print(err)
+        return None
+
+
+def report_adoption_maturity(args):
+    orgs = load_json_file(args["config"])
+    template_file = args['template']
+    templates = load_json_file(f"{template_file}")
+
+    for org in orgs:
+        integrations = orgs[org]
+        for name in integrations:
+            integration = integrations[name]
+            template_name = name.split(CFG_DELIMETER)[0]
+            try:
+                template = templates[template_name]
+                diff = jsoncomparison.Compare().check(template, integration)
+                if len(diff):
+                    print(f"Organisation {org.split(CFG_DELIMETER)[0]} - {template_name} integration configuration benchmark results against {template_file}")
+                    print(json.dumps(diff, indent=4))
+                else:
+                    print(f"Organisation {org.split(CFG_DELIMETER)[0]} - {template_name} integration configuration is aligned with {template_file}")
+
+            except KeyError as err:
+                print(f"Organisation {org.split(CFG_DELIMETER)[0]} {err} integration. Template configuration does not exist in {template_file}")

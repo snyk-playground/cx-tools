@@ -1,0 +1,50 @@
+{
+  "github": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": false
+    },
+    "dockerfileSCMEnabled": false,
+    "isMajorUpgradeEnabled": false,
+    "manualRemediationPrs": {
+      "useManualPatchRemediation": false
+    },
+    "pullRequestAssignment": {
+      "type": "auto",
+      "enabled": false,
+      "assignees": []
+    },
+    "pullRequestFailOnAnyVulns": false,
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true,
+    "reachableVulns": {
+      "enabled": false
+    }
+  },
+  "gitlab": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": true
+    },
+    "manualRemediationPrs": {
+      "useManualPatchRemediation": false
+    },
+    "pullRequestFailOnAnyVulns": false,
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true
+  }
+}
