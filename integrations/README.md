@@ -106,3 +106,13 @@ python3 ./integrations/parse_integrations.py
 ### Note:
 At the time of writing, I am required to use a mix of GA and beta REST APIs. As the beta APIs become GA, so I will 
 update this software.
+
+I'm still trying to nail this down, but I think I have observed some gremlins in terms of data the integrations api 
+that the UI does not. To that end the following config attributes must be set using the api only:
+
+- autoPrivateDepUpgradeEnabled
+- pullRequestAssignment
+  - type
+
+If you know definitively where/if the gremlins exist, please speak up! That said, i've tested this software well enough 
+to be certain that it works! Fix any api nuances and the mechanics of how this works will seamlessly consume the change.
