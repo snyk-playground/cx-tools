@@ -53,30 +53,30 @@ Speak with the TSM team for guidance as to what configuration settings align wit
 ````
 Run from the cx-tools directory.
 
-python3 ./integrations/update_integrations.py
+python3 integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config_file="<json-config-filename>"
     --api_ver="<snyk-rest-api-version>"
 
-python3 ./integrations/update_integrations.py
+python3 integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
-    --config_file="kevin.matthews Group--Org1Org2.json"
+    --config_file="integrations/kevin.matthews Group--Org1Org2.json"
     --api_ver="2024-08-15"
 ````
 ### Apply configuration from a template configuration file
 ````
 Run from the cx-tools directory.
 
-python3 ./integrations/update_integrations.py
+python3 integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config_file="<json-config-filename>"
     --template="<json-template-config>"
     --api_ver="<snyk-rest-api-version>"
 
-python3 ./integrations/update_integrations.py
+python3 integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
-    --config_file="kevin.matthews Group--Org1Org2.json"
-    --template="./integrations/templates/preventnewissues.json"
+    --config_file="integrations/kevin.matthews Group--Org1Org2.json"
+    --template="integrations/templates/preventnewissues.json"
     --api_ver="2024-08-15"
 
 ````
@@ -97,8 +97,8 @@ python3 ./integrations/benchmark_adoption_maturity.py
 
 python3 ./integrations/parse_integrations.py
     --snyk_token="<snyk-token-value>" 
-    --config "kevin.matthews Group_Snyk_Integrations.json"
-    --template "templates/preventnewissues.json"
+    --config "integrations/kevin.matthews Group_Snyk_Integrations.json"
+    --template "integrations/templates/preventnewissues.json"
     --api_ver="2024-08-15"
 
 ````
