@@ -8,25 +8,51 @@
       "freshPrsEnabled": true,
       "backlogPrStrategy": "vuln",
       "backlogPrsEnabled": true,
-      "usePatchRemediation": false
+      "usePatchRemediation": true
     },
-    "dockerfileSCMEnabled": false,
+    "dockerfileSCMEnabled": true,
     "isMajorUpgradeEnabled": true,
     "manualRemediationPrs": {
-      "useManualPatchRemediation": false
+      "useManualPatchRemediation": true
     },
     "pullRequestAssignment": {
       "type": "auto",
       "enabled": true,
       "assignees": []
     },
-    "pullRequestFailOnAnyVulns": false,
+    "pullRequestFailOnAnyVulns": true,
     "pullRequestFailOnlyForHighSeverity": true,
     "pullRequestFailOnlyForIssuesWithFix": true,
     "pullRequestTestEnabled": true,
     "reachableVulns": {
-      "enabled": false
+      "enabled": true
     }
+  },
+  "github-cloud-app": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": true
+    },
+    "dockerfileSCMEnabled": true,
+    "isMajorUpgradeEnabled": true,
+    "manualRemediationPrs": {
+      "useManualPatchRemediation": true
+    },
+    "pullRequestAssignment": {
+      "type": "auto",
+      "enabled": true,
+      "assignees": []
+    },
+    "pullRequestFailOnAnyVulns": true,
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true
   },
   "gitlab": {
     "autoDepUpgradeEnabled": true,

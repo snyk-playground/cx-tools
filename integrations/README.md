@@ -43,10 +43,13 @@ Note that the org_names argument is optional.
 
 After bulk editing the configuration pertaining to their integrations offline, this utility allows Snyk customers 
 to upload that configuration at scale across their Snyk deployment. The persisted json file can be edited to ensure 
-configuration that is aligned to the customer's DevSecOps maturity and ambitions. Speak with the TSM team for 
-guidance as to what configuration settings align with your requirements at this time.
+configuration that is aligned to the customer's DevSecOps maturity and ambitions. Alternatively, template configuration 
+can be passed to this script, with the integration config settings applied from the template configuration file.
+
+Speak with the TSM team for guidance as to what configuration settings align with your requirements at this time.
 
 ## How to call update_integrations.py
+### Apply configuration from a persisted configuration file
 ````
 Run from the cx-tools directory.
 
@@ -59,9 +62,46 @@ python3 ./integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config_file="kevin.matthews Group--Org1Org2.json"
     --api_ver="2024-08-15"
+````
+### Apply configuration from a template configuration file
+````
+Run from the cx-tools directory.
+
+python3 ./integrations/update_integrations.py
+    --snyk_token="<snyk-token-value>" 
+    --config_file="<json-config-filename>"
+    --template="<json-template-config>"
+    --api_ver="<snyk-rest-api-version>"
+
+python3 ./integrations/update_integrations.py
+    --snyk_token="<snyk-token-value>" 
+    --config_file="kevin.matthews Group--Org1Org2.json"
+    --template="./integrations/templates/preventnewissues.json"
+    --api_ver="2024-08-15"
 
 ````
 
+# Benchmark Adoption Maturity
+This utility allows Snyk customers to parse the persisted configuration and benchmark its alignment with a template
+configuration file. Disparities between the persisted configuration and the template configuration are identified.
+
+## How to call benchmark_adoption_maturity.py
+````
+Run from the cx-tools directory.
+
+python3 ./integrations/benchmark_adoption_maturity.py
+    --snyk_token="<snyk-token-value>" 
+    --config="<json-config-filename>"
+    --template="<json-template-config>"
+    --api_ver="<snyk-rest-api-version>"
+
+python3 ./integrations/parse_integrations.py
+    --snyk_token="<snyk-token-value>" 
+    --config "kevin.matthews Group_Snyk_Integrations.json"
+    --template "templates/preventnewissues.json"
+    --api_ver="2024-08-15"
+
+````
 
 ### Note:
 At the time of writing, I am required to use a mix of GA and beta REST APIs. As the beta APIs become GA, so I will 

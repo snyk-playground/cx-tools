@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from integrations.utils.util_func import load_json_file, report_adoption_maturity
+from integrations.utils.util_func import report_adoption_maturity
 
 
 def get_arguments():
