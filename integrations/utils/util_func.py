@@ -91,7 +91,7 @@ def parse_integrations(args):
 # Update the integrations with the config persisted in a file
 def update_integrations(args):
     try:
-        my_config = args["config_file"]
+        my_config = args["config"]
         orgs = load_json_file(my_config)
         print(f"Organisation data parsed from {my_config}")
         template = None
