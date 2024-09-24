@@ -24,13 +24,13 @@ org name and integration name are augmented by their internal Snyk id(s). These 
 ````
 Run from the cx-tools directory.
 
-python3 ./integrations/parse_integrations.py
+python3 integrations/parse_integrations.py
     --snyk_token="<snyk-token-value>" 
     --grp_name="<snyk-group-name>"
     --org_names="<target-snyk-org-name1,target-snyk-org-name2>" 
     --api_ver="<snyk-rest-api-version>"
 
-python3 ./integrations/parse_integrations.py
+python3 integrations/parse_integrations.py
     --snyk_token="<snyk-token-value>" 
     --grp_name="kevin.matthews Group"
     --org_names="Org1,Org2" 
@@ -89,13 +89,13 @@ configuration file. Disparities between the persisted configuration and the temp
 ````
 Run from the cx-tools directory.
 
-python3 ./integrations/benchmark_adoption_maturity.py
+python3 integrations/benchmark_adoption_maturity.py
     --snyk_token="<snyk-token-value>" 
     --config="<json-config-filename>"
     --template="<json-template-config>"
     --api_ver="<snyk-rest-api-version>"
 
-python3 ./integrations/parse_integrations.py
+python3 integrations/parse_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config "integrations/kevin.matthews Group_Snyk_Integrations.json"
     --template "integrations/templates/preventnewissues.json"
