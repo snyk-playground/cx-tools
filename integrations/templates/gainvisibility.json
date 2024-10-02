@@ -20,7 +20,7 @@
       "enabled": false,
       "assignees": []
     },
-    "pullRequestFailOnAnyVulns": true,
+    "pullRequestFailOnAnyVulns": false,
     "pullRequestFailOnlyForHighSeverity": false,
     "pullRequestFailOnlyForIssuesWithFix": false,
     "pullRequestTestEnabled": false,
@@ -32,7 +32,7 @@
     "autoDepUpgradeEnabled": false,
     "autoDepUpgradeIgnoredDependencies": [],
     "autoDepUpgradeLimit": 5,
-    "autoPrivateDepUpgradeEnabled": true,
+    "autoPrivateDepUpgradeEnabled": false,
     "autoRemediationPrs": {
       "freshPrsEnabled": false,
       "backlogPrStrategy": "vuln",

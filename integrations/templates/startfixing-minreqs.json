@@ -1,0 +1,46 @@
+{
+  "github": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true
+    },
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true
+  },
+  "github-cloud-app": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": false
+    },
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true
+  },
+  "gitlab": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": true
+    },
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true
+  }
+}

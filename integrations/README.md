@@ -83,7 +83,10 @@ python3 integrations/update_integrations.py
 
 # Benchmark Adoption Maturity
 This utility allows Snyk customers to parse the persisted configuration and benchmark its alignment with a template
-configuration file. Disparities between the persisted configuration and the template configuration are identified.
+configuration file. Disparities between the persisted configuration and the template configuration are identified. The 
+'mid-journey' adoption phases have a template that baselines all settings (be they active or not) and also a minimum 
+requirements template that comprises only those config attributes that must be active to achieve the adoption maturity 
+phase. 
 
 ## How to call benchmark_adoption_maturity.py
 ````
