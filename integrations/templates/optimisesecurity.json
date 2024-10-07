@@ -1,0 +1,76 @@
+{
+  "github": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": true
+    },
+    "dockerfileSCMEnabled": true,
+    "isMajorUpgradeEnabled": true,
+    "manualRemediationPrs": {
+      "useManualPatchRemediation": true
+    },
+    "pullRequestAssignment": {
+      "type": "auto",
+      "enabled": true,
+      "assignees": []
+    },
+    "pullRequestFailOnAnyVulns": true,
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true,
+    "reachableVulns": {
+      "enabled": true
+    }
+  },
+  "github-cloud-app": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": true
+    },
+    "dockerfileSCMEnabled": true,
+    "isMajorUpgradeEnabled": true,
+    "manualRemediationPrs": {
+      "useManualPatchRemediation": true
+    },
+    "pullRequestAssignment": {
+      "type": "auto",
+      "enabled": true,
+      "assignees": []
+    },
+    "pullRequestFailOnAnyVulns": true,
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true
+  },
+  "gitlab": {
+    "autoDepUpgradeEnabled": true,
+    "autoDepUpgradeIgnoredDependencies": [],
+    "autoDepUpgradeLimit": 5,
+    "autoPrivateDepUpgradeEnabled": true,
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": true,
+      "usePatchRemediation": true
+    },
+    "manualRemediationPrs": {
+      "useManualPatchRemediation": true
+    },
+    "pullRequestFailOnAnyVulns": true,
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true
+  }
+}

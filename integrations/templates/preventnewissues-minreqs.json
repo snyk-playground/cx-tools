@@ -1,0 +1,34 @@
+{
+  "github": {
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln"
+    },
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true,
+    "reachableVulns": {
+      "enabled": false
+    }
+  },
+  "github-cloud-app": {
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln"
+    },
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestEnabled": true,
+    "reachableVulns": {
+      "enabled": false
+    }
+  },
+  "gitlab": {
+    "autoRemediationPrs": {
+      "freshPrsEnabled": true,
+      "backlogPrStrategy": "vuln"
+    },
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true
+  }
+}
