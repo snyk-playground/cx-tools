@@ -8,7 +8,9 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 
 ### Environment:
 Ensure that the 'cx-tools' directory is included in your PYTHONPATH environment variable. This ensures that the import 
-statements for modules in sub folders are resolved.
+statements for modules in sub folders are resolved. 
+
+This software has been written and tested using python 3.10.4
 
 ````
     cd cx-tools
