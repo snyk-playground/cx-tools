@@ -1,7 +1,8 @@
 import argparse
 import os
-import utils.util_func
+
 from integrations.utils.util_func import update_integrations
+
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Script to update Snyk integration settings')

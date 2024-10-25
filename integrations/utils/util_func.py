@@ -1,11 +1,8 @@
 import json
 import urllib.parse
 import jsoncomparison
-
-from integrations.utils.rest_api import group_orgs
-from integrations.utils.rest_api import groups
-from integrations.utils.snyk_api import org_integrations, update_org_integration_settings
-from integrations.utils.snyk_api import get_org_integration_settings
+from apis.rest_api import groups, group_orgs
+from apis.snyk_api import org_integrations, get_org_integration_settings, update_org_integration_settings
 
 CFG_DELIMITER = "::"
 
