@@ -1,8 +1,6 @@
 import argparse
-import json
 import os
-import utils.util_func
-
+from utils.util_func import tagged_project_issues
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='This script enables you to configure IQ Server from JSON\
@@ -28,4 +26,4 @@ if __name__ == '__main__':
       'Authorization': 'token {0}'.format(os.getenv('SNYK_TOKEN'))
     }
 
-    utils.util_func.tagged_project_issues(headers, args)
+    tagged_project_issues(headers, args)
