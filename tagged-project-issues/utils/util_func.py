@@ -1,25 +1,11 @@
 import json
-import urllib.parse
-
-import utils.rest_api
-
-
-def next_page(response):
-    # response['links']['next']
-    try:
-        pagination = urllib.parse.parse_qs(response['links']['next'],
-                                           keep_blank_values=False, strict_parsing=False,
-                                           encoding='utf-8', errors='replace',
-                                           max_num_fields=None, separator='&')
-        pagination = pagination['starting_after'][0]
-    except:
-        pagination = None
-    return pagination
+from apis.pagination import next_page
+from apis.rest_api import group_orgs, org_projects, project_issues, groups
 
 
-def tagged_project_issues(headers, args):
+def tagged_project_issues(args):
     # Retrieve all my groups
-    g_response = json.loads(utils.rest_api.groups(headers, args["api_ver"]))
+    g_response = json.loads(groups(args["api_ver"], None))
 
     # dictionary for all the issues within the tagged projects
     tp_issues = {}
@@ -36,7 +22,7 @@ def tagged_project_issues(headers, args):
         if group['attributes']['name'] == args['grp_name']:
             go_pagination = None
             while True:
-                go_response = json.loads(utils.rest_api.group_orgs(headers, args["api_ver"], group, go_pagination))
+                go_response = json.loads(group_orgs(args["api_ver"], group, go_pagination))
 
                 # Iterate to the named Org
                 for org in go_response['data']:
@@ -46,7 +32,7 @@ def tagged_project_issues(headers, args):
                         while True:
                             # Use of the project_tags ensures only those with the right tag are returned
                             op_response = json.loads(
-                                utils.rest_api.org_projects(headers, args["api_ver"], org, args["project_tags"], op_pagination))
+                                org_projects(args["api_ver"], org, args["project_tags"], op_pagination))
 
                             for project in op_response['data']:
                                 # iterate over the tags in each project and persist it i it has one of the tags
@@ -78,9 +64,9 @@ def tagged_project_issues(headers, args):
         while True:
             # Grab a page of vuln data for the current project
             pi_response = json.loads(
-                utils.rest_api.project_issues(headers, args["api_ver"],
-                                              project['relationships']['organization']['data'], '100', project['id'],
-                                              'project', args["effective_severity_level"], pi_pagination))
+                project_issues(args["api_ver"],
+                               project['relationships']['organization']['data'], '100', project['id'],
+                               'project', args["effective_severity_level"], pi_pagination))
 
             # Print the project vuln page content
             if len(pi_response['data']):

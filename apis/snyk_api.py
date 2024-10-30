@@ -37,3 +37,13 @@ def update_org_integration_settings(org_id, integration_id, values):
     if response.status_code != 200:
         print(response.text)
     return response.text
+
+
+def org_members(org_id):
+    response = None
+    try:
+        url = 'https://api.snyk.io/v1/org/{0}/members?includeGroupAdmins=true'.format(org_id)
+        response = requests.request("GET", url, headers=build_headers()).text
+        return response
+    except Exception:
+        print(json.dumps(response, indent=4))

@@ -1,28 +1,13 @@
 import json
-import urllib.parse
 import jsoncomparison
 
-from integrations.utils.rest_api import group_orgs
-from integrations.utils.rest_api import groups
-from integrations.utils.snyk_api import org_integrations, update_org_integration_settings
-from integrations.utils.snyk_api import get_org_integration_settings
+from apis.pagination import next_page
+from apis.rest_api import groups, group_orgs
+from apis.snyk_api import org_integrations, get_org_integration_settings, update_org_integration_settings
 
 CFG_DELIMITER = "::"
 
 # Handle pagination
-def next_page(response):
-    # response['links']['next']
-    try:
-        pagination = urllib.parse.parse_qs(response['links']['next'],
-                                           keep_blank_values=False, strict_parsing=False,
-                                           encoding='utf-8', errors='replace',
-                                           max_num_fields=None, separator='&')
-        pagination = pagination['starting_after'][0]
-    except:
-        pagination = None
-    return pagination
-
-
 # Is the current org in scope?
 def org_of_interest(orgs, orgname):
     if orgs == None or orgname in orgs:
