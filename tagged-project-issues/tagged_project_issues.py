@@ -9,7 +9,7 @@ def get_arguments():
     parser.add_argument('-g', '--grp_name', required=True)
     parser.add_argument('-o', '--org_name', required=True)
     parser.add_argument('-t', '--project_tags', required=True)
-    parser.add_argument('-v', '--api_ver', default="2024-01-23")
+    parser.add_argument('-v', '--api_ver', required=True)
     parser.add_argument('-s', '--effective_severity_level', default="critical,high")
 
     args = vars(parser.parse_args())
@@ -22,9 +22,4 @@ if __name__ == '__main__':
 
     args = get_arguments()
 
-    headers = {
-      'Content-Type': 'application/vnd.api+json',
-      'Authorization': 'token {0}'.format(os.getenv('SNYK_TOKEN'))
-    }
-
-    tagged_project_issues(headers, args)
+    tagged_project_issues(args)
