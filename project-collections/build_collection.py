@@ -9,7 +9,7 @@ from utils.util_func import process_collection
 def get_arguments():
     parser = argparse.ArgumentParser(description='This script enables you to configure IQ Server from JSON\
      data, thus supporting the config-as-code requirement of Sonatype customers')
-    parser.add_argument('-a', '--snyk_token', required=True)
+    parser.add_argument('-a', '--snyk_token', default=None)
     parser.add_argument('-g', '--grp_name', required=True)
     parser.add_argument('-o', '--org_name', required=True)
     parser.add_argument('-c', '--collection_name', required=True)
@@ -17,6 +17,9 @@ def get_arguments():
     parser.add_argument('-v', '--api_ver', default="2024-01-23")
 
     args = vars(parser.parse_args())
+    if args["snyk_token"]:
+        os.environ["SNYK_TOKEN"] = args["snyk_token"]
+
     return args
 
 
@@ -56,8 +59,6 @@ def add_proj_to_collection(args, org, collection_id):
 if __name__ == '__main__':
 
     args = get_arguments()
-    os.environ['SNYK_TOKEN'] = args['snyk_token']
-
     process_collection(args, add_proj_to_collection)
 
 
