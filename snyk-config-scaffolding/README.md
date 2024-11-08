@@ -54,7 +54,7 @@ python3 Snyk-Config-Scaffolding/src/snyk-scaffold.py
     --template_org_id="<your-template-org-id>"
 
 
-Note that the template_org_id is optional.
+Note that the template_org_id and api_ver are optional.
 ````
 
 # Snyk-Org-Id
@@ -76,8 +76,12 @@ python3 Snyk-Config-Scaffolding/src/snyk-org-id.py
     --org_name="Kevin-Test2"
     --api_ver="2024-08-15"
     --return="SLUG"
+
+Note that the api_ver is optional.
+
 ````
 
 ### Note:
+
 At the time of writing, I am required to use a mix of GA and beta REST APIs. As the beta APIs become GA, so I will 
 update this software.

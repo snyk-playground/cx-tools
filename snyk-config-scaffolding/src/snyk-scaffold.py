@@ -20,8 +20,7 @@ def get_arguments():
     args = vars(parser.parse_args())
     if args["group_svc_ac_token"]:
         os.environ["SNYK_TOKEN"] = args["group_svc_ac_token"]
-    if args["api_ver"]:
-        os.environ["API_VERSION"] = args["api_ver"]
+    os.environ["API_VERSION"] = args["api_ver"]
 
     return args
 

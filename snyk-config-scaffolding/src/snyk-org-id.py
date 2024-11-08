@@ -1,8 +1,7 @@
 import argparse
+import os
 
-from apis.rest_api import get_group_id
-from utils.util_func import check_organization_exists
-
+from utils.util_func import check_organization_exists, get_named_group
 
 
 # Parse command line arguments that instruct program operation
@@ -12,9 +11,11 @@ def get_arguments():
         CD-CD pipelines')
     parser.add_argument('-g', '--group_name', required=True)
     parser.add_argument('-o', '--org_name', required=True)
-    parser.add_argument('-v', '--api_ver', required=True)
-    parser.add_argument('-r', '--return', required=True, default="ID")
+    parser.add_argument('-v', '--api_ver', default="2024-08-15")
+    parser.add_argument('-r', '--return', default="ID")
     args = vars(parser.parse_args())
+    os.environ["API_VERSION"] = args["api_ver"]
+
     return args
 
 
@@ -23,7 +24,7 @@ def get_arguments():
 # organisation.
 def snyk_org_id(args):
     svc_ac_key = None
-    group_id = get_group_id(args)
+    group_id = get_named_group(args)
     if group_id is not None:
         org_id = check_organization_exists(args, group_id)
     return org_id
