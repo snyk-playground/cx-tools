@@ -1,5 +1,5 @@
 import json
-import jsoncomparison
+#import jsoncomparison
 
 from apis.pagination import next_page
 from apis.rest_api import groups, group_orgs
@@ -24,7 +24,7 @@ def parse_integrations(args):
         g_pagination = None
         while True:
             # Retrieve all my groups
-            g_response = json.loads(groups(args["api_ver"], g_pagination))
+            g_response = json.loads(groups(g_pagination).text)
 
             go_response = None
             try:
@@ -33,19 +33,19 @@ def parse_integrations(args):
                     if group['attributes']['name'] == args['grp_name']:
                         go_pagination = None
                         while True:
-                            go_response = json.loads(group_orgs(args["api_ver"], group, go_pagination))
+                            go_response = json.loads(group_orgs(group, go_pagination).text)
 
                             # Iterate to the named Org
                             for org in go_response['data']:
                                 if org_of_interest(args["org_names"], org['attributes']['name']):
 
                                     # Parse the integrations
-                                    org_ints_response = json.loads(org_integrations(org['id']))
+                                    org_ints_response = json.loads(org_integrations(org['id']).text)
                                     orgs_integrations[org["attributes"]["name"] + CFG_DELIMITER + org["id"]] = {}
 
                                     # Collate the integration settings by name within the org
                                     for org_int in org_ints_response:
-                                        settings = json.loads(get_org_integration_settings(org['id'], org_ints_response[org_int]))
+                                        settings = json.loads(get_org_integration_settings(org['id'], org_ints_response[org_int]).text)
                                         orgs_integrations[org['attributes']['name'] + CFG_DELIMITER + org["id"]] \
                                             [org_int + CFG_DELIMITER + org_ints_response[org_int]] = settings
 

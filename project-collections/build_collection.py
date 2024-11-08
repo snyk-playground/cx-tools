@@ -19,12 +19,12 @@ def get_arguments():
     args = vars(parser.parse_args())
     if args["snyk_token"]:
         os.environ["SNYK_TOKEN"] = args["snyk_token"]
-
+    os.environ["API_VERSION"] = args["api_ver"]
     return args
 
 
 def is_project_in_collection(project):
-    pass
+    return False
 
 
 def add_proj_to_collection(args, org, collection_id):
@@ -34,14 +34,14 @@ def add_proj_to_collection(args, org, collection_id):
         while True:
             # Use of the project_tags ensures only those with the right tag are returned
             op_response = json.loads(
-                org_projects(args["api_ver"], org,
-                             args["project_tags"], op_pagination))
+                org_projects(org,
+                             args["project_tags"], op_pagination).text)
 
             for project in op_response['data']:
                 # iterate over the tags in each project and persist it if it has one of the tags
                 # of interest that does not exist already in the collection
                 if is_project_in_collection(project) is False:
-                    add_project_to_collection(args, org, collection_id, project)
+                    add_project_to_collection(org, collection_id, project)
 
             # Next page?
             op_pagination = next_page(op_response)

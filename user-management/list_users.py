@@ -1,9 +1,6 @@
 import argparse
-import json
 import os
-import urllib
-
-import utils.util_func
+from utils.util_func import parse_users
 
 
 def get_arguments():
@@ -13,7 +10,7 @@ def get_arguments():
     parser.add_argument('-g', '--grp_name', required=True)
     parser.add_argument('-o', '--org_names', default=None)
     parser.add_argument('-r', '--roles', required=True)
-    parser.add_argument('-v', '--api_ver', required=True)
+    parser.add_argument('-v', '--api_ver', default="2024-08-15")
 
     args = vars(parser.parse_args())
     if args["snyk_token"]:
@@ -24,10 +21,11 @@ def get_arguments():
         for org_name in args["org_names"]:
             args["org_names"][index] = (org_name.strip())
             index += 1
+    os.environ["API_VERSION"] = args["api_ver"]
     return args
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     args = get_arguments()
-    utils.util_func.parse_users(args)
+    parse_users(args)

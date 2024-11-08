@@ -1,4 +1,5 @@
 import json
+import os
 from apis.pagination import next_page
 from apis.rest_api import groups, group_orgs, get_collections, create_a_collection
 
@@ -9,7 +10,7 @@ def process_collection(args, func):
     g_pagination = None
 
     while(True):
-        g_response = json.loads(groups(args["api_ver"], g_pagination))
+        g_response = json.loads(groups(g_pagination).text)
 
         try:
             # Iterate to the named group
@@ -17,7 +18,7 @@ def process_collection(args, func):
             for group in g_response['data']:
                 if group['attributes']['name'] == args['grp_name']:
                     while True:
-                        go_response = json.loads(group_orgs(args["api_ver"], group, go_pagination))
+                        go_response = json.loads(group_orgs(group, go_pagination).text)
 
                         # Iterate to the named Org
                         for org in go_response['data']:
@@ -55,7 +56,7 @@ def find_collection(args, org):
 
     try:
         while True:
-            response = json.loads(get_collections(args["api_ver"], org, c_pagination))
+            response = json.loads(get_collections(org, c_pagination).text)
             collections = collections + response["data"]
 
             # Next page?
@@ -63,7 +64,7 @@ def find_collection(args, org):
             if c_pagination is None:
                 break
 
-        for coll in response["data"]:
+        for coll in collections:
             if coll['attributes']['name'] == args["collection_name"]:
                 return coll['id']
 

@@ -17,7 +17,7 @@ def parse_users(args):
     # Retrieve all my groups
     g_pagination = None
     while True:
-        g_response = json.loads(groups(args["api_ver"], g_pagination))
+        g_response = json.loads(groups(g_pagination).text)
         orgs_members = dict()
 
         try:
@@ -26,7 +26,7 @@ def parse_users(args):
                 if group['attributes']['name'] == args['grp_name']:
                     go_pagination = None
                     while True:
-                        go_response = json.loads(group_orgs(args["api_ver"], group, go_pagination))
+                        go_response = json.loads(group_orgs(group, go_pagination).text)
 
                         # Iterate to the named Org
                         for org in go_response['data']:
@@ -34,7 +34,7 @@ def parse_users(args):
 
                                 # Parse the users
                                 scoped_members = []
-                                all_members = json.loads(org_members(org['id']))
+                                all_members = json.loads(org_members(org['id']).text)
                                 for member in all_members:
                                     if member['role'] in args['roles']:
                                         scoped_members.append(member)
