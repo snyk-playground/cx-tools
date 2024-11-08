@@ -27,7 +27,9 @@ list_users --snyk_token \<snyk-auth-token\> --grp_name "kevin.matthews Group" --
 - --roles "Snyk role(s) to be retrieved. Comma delimited."
 - --api_ver "The version of the Snyk API to be used (default recommended)"
 
-### Note 
+````
+Note that the org_names, snyk_token and api_ver arguments are optional.
+
 Some of the APIs used are in beta. Others are GA. As the beta's become GA, it will become necessary to remove the 'hard-coded' use of their 
 beta counterparts. Meantime, please DO NOT specify a beta version of an API should you wish to choose a specific 
 version. It is recommended at this time that you allow the default version to be used.

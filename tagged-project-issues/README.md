@@ -30,8 +30,10 @@ tagged_project_issues -a \<snyk-auth-token\> -g "kevin.matthews Group" -o "PR Te
 - --effective_severity_level "Comma separated list of severities to be identified in tagged project issues payload"
 - --api_ver "The version of the Snyk API to be used (default recommended)"
 
-
+````
 ### Note: 
+Note that the snyk_token and api_ver arguments are optional.
+
 <p>Search may comprise multiple tags (comma delimited) and multiple severity thresholds (comma delimited). These are 
 logically AND'd and must all be annotated to a project in order for results to be returned. If a project is annotated 
 with multiple tags, use of one of those tags by this utility will return results.</p>

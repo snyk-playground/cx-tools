@@ -38,7 +38,7 @@ python3 integrations/parse_integrations.py
     --org_names="Org1,Org2" 
     --api_ver="2024-08-15"
 
-Note that the org_names argument is optional.
+Note that the org_names, snyk_token and api_ver arguments are optional.
 ````
 
 # Update Integrations

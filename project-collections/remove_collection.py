@@ -11,12 +11,12 @@ def get_arguments():
     parser.add_argument('-g', '--grp_name', required=True)
     parser.add_argument('-o', '--org_name', required=True)
     parser.add_argument('-c', '--collection_name', required=True)
-    parser.add_argument('-v', '--api_ver', required=True)
+    parser.add_argument('-v', '--api_ver', default="2024-08-15")
 
     args = vars(parser.parse_args())
     if args["snyk_token"]:
         os.environ["SNYK_TOKEN"] = args["snyk_token"]
-
+    os.environ["API_VERSION"] = args["api_ver"]
     return args
 
 

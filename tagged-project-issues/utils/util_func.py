@@ -5,7 +5,7 @@ from apis.rest_api import group_orgs, org_projects, project_issues, groups
 
 def tagged_project_issues(args):
     # Retrieve all my groups
-    g_response = json.loads(groups(args["api_ver"], None))
+    g_response = json.loads(groups(None).text)
 
     # dictionary for all the issues within the tagged projects
     tp_issues = {}
@@ -22,7 +22,7 @@ def tagged_project_issues(args):
         if group['attributes']['name'] == args['grp_name']:
             go_pagination = None
             while True:
-                go_response = json.loads(group_orgs(args["api_ver"], group, go_pagination))
+                go_response = json.loads(group_orgs(group, go_pagination).text)
 
                 # Iterate to the named Org
                 for org in go_response['data']:
@@ -32,7 +32,7 @@ def tagged_project_issues(args):
                         while True:
                             # Use of the project_tags ensures only those with the right tag are returned
                             op_response = json.loads(
-                                org_projects(args["api_ver"], org, args["project_tags"], op_pagination))
+                                org_projects(org, args["project_tags"], op_pagination).text)
 
                             for project in op_response['data']:
                                 # iterate over the tags in each project and persist it i it has one of the tags
@@ -64,9 +64,8 @@ def tagged_project_issues(args):
         while True:
             # Grab a page of vuln data for the current project
             pi_response = json.loads(
-                project_issues(args["api_ver"],
-                               project['relationships']['organization']['data'], '100', project['id'],
-                               'project', args["effective_severity_level"], pi_pagination))
+                project_issues(project['relationships']['organization']['data'], '100', project['id'],
+                               'project', args["effective_severity_level"], pi_pagination).text)
 
             # Print the project vuln page content
             if len(pi_response['data']):
