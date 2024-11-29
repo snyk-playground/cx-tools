@@ -30,9 +30,9 @@ def get_arguments():
 def is_project_in_collection(org_id, project_id, collection_id):
     global collection_projects
     if not collection_projects:
+        coll_pagination = None
         while True:
-            pagination = None
-            response = json.loads(get_collection_projects(org_id, collection_id, pagination).text)
+            response = json.loads(get_collection_projects(org_id, collection_id, coll_pagination).text)
             for rel in response["data"]:
                 # Save the id of the target that owns the project within the collection
                 # The api doesn't return the project id per-se, so the target is the best available reference
@@ -40,11 +40,12 @@ def is_project_in_collection(org_id, project_id, collection_id):
 
             # Add a dummy entry to ensure the empty collection does not cause the collection projects
             # list to be retrieved next time
-            collection_projects.append("Dummy")
+            if not collection_projects:
+                collection_projects.append("Dummy")
 
             # Next page?
-            op_pagination = next_page(response)
-            if op_pagination is None:
+            coll_pagination = next_page(response)
+            if coll_pagination is None:
                 break
 
 
@@ -78,10 +79,14 @@ def build_collection(args, org, collection_id):
             if op_pagination is None:
                 break
 
+        # Remove the dummy id that prevented the empty collection yielding another parse of the
+        # collection content once the first item was added to the collection
+        if collection_projects.__contains__("Dummy"):
+            collection_projects.remove("Dummy")
+
         # Any project ids from list that made up the collection which have not been deleted
         # no longer return in the 'tagged' projects list and therefore must be deleted from
         # the collection
-        collection_projects.remove("Dummy")
         for project_id in collection_projects:
             delete_project_from_collection(org, collection_id, project_id)
 
