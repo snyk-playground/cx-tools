@@ -34,8 +34,7 @@ def is_project_in_collection(org_id, project_id, collection_id):
         while True:
             response = json.loads(get_collection_projects(org_id, collection_id, coll_pagination).text)
             for rel in response["data"]:
-                # Save the id of the target that owns the project within the collection
-                # The api doesn't return the project id per-se, so the target is the best available reference
+                # Save the id of the collection to save the api call to add it when it already exists
                 collection_projects.append(rel["id"])
 
             # Add a dummy entry to ensure the empty collection does not cause the collection projects
@@ -48,8 +47,7 @@ def is_project_in_collection(org_id, project_id, collection_id):
             if coll_pagination is None:
                 break
 
-
-    # Is the project already in the collection
+    # Is the project already in the collection?
     if project_id in collection_projects:
         # Remove the accounted for project. By the end projects that remain are no longer aligned to the list
         # of projects with the tag and should be removed from the collection
@@ -65,8 +63,7 @@ def build_collection(args, org, collection_id):
         while True:
             # Use of the project_tags ensures only those with the right tag are returned
             op_response = json.loads(
-                org_projects(org,
-                             args["project_tags"], op_pagination).text)
+                org_projects(org, args["project_tags"], op_pagination).text)
 
             for project in op_response['data']:
                 # iterate over the tags in each project and persist it if it has one of the tags
@@ -94,8 +91,6 @@ def build_collection(args, org, collection_id):
         print("POST call to /collections - Unable to build collection")
         print(json.dumps(op_response, indent=4))
         return
-
-
 
 
 # Press the green button in the gutter to run the script.
