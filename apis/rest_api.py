@@ -40,6 +40,7 @@ def group_orgs(group, pagination):
     return response
 
 
+# Retrieve all the collections within the org
 def get_collections(org, pagination):
 
     if pagination is None:
@@ -51,6 +52,28 @@ def get_collections(org, pagination):
     return response
 
 
+# Retrieve the specified collection contents
+def get_collection(org, collection_id):
+
+    url = f'{SNYK_REST_API_BASE_URL}/orgs/{org["id"]}/collections/{collection_id}?version={os.environ["API_VERSION"]}'
+
+    response = requests.request("GET", url, headers=build_headers())
+    return response
+
+
+# Retrieve the projects within the specified collection
+def get_collection_projects(org_id, collection_id, pagination):
+
+    if pagination is None:
+        url = f'{SNYK_REST_API_BASE_URL}/orgs/{org_id}/collections/{collection_id}/relationships/projects?version={os.environ["API_VERSION"]}'
+    else:
+        url = f'{SNYK_REST_API_BASE_URL}/orgs/{org_id}/collections/{collection_id}/relationships/projects?version={os.environ["API_VERSION"]}&starting_after={pagination}'
+
+    response = requests.request("GET", url, headers=build_headers())
+    return response
+
+
+# Create a named collection
 def create_a_collection(args, org):
     name = '{0}'.format(args["collection_name"])
     body = {"data": {"attributes": {"name": name}, "type": "resource"}}
@@ -65,17 +88,33 @@ def create_a_collection(args, org):
     return None
 
 
-def add_project_to_collection(org, collection_id, project):
+# Add a project to an existing collection
+def add_project_to_collection(org, collection_id, project_id):
     url = f'{SNYK_REST_API_BASE_URL}/orgs/{org["id"]}/collections/{collection_id}/relationships/projects?version={os.environ["API_VERSION"]}'
     body = {
         "data": [
             {
-                "id": project["id"],
+                "id": project_id,
                 "type": "project"
             }
         ]
     }
     response = requests.post(url, json=body, headers=build_headers())
+    return response
+
+
+# Delete a project from an existing collection
+def delete_project_from_collection(org, collection_id, project_id):
+    url = f'{SNYK_REST_API_BASE_URL}/orgs/{org["id"]}/collections/{collection_id}/relationships/projects?version={os.environ["API_VERSION"]}'
+    body = {
+        "data": [
+            {
+                "id": project_id,
+                "type": "project"
+            }
+        ]
+    }
+    response = requests.delete(url, json=body, headers=build_headers())
     return response
 
 
