@@ -73,7 +73,7 @@ def get_collection_projects(org_id, collection_id, pagination):
     return response
 
 
-# Create a named collection
+# Create a named collection in a specified org
 def create_a_collection(args, org):
     name = '{0}'.format(args["collection_name"])
     body = {"data": {"attributes": {"name": name}, "type": "resource"}}
@@ -118,22 +118,24 @@ def delete_project_from_collection(org, collection_id, project_id):
     return response
 
 
+# Delete the collection from an org
 def remove_collection(args, org, collection_id):
     url = f'{SNYK_REST_API_BASE_URL}/orgs/{org["id"]}/collections/{collection_id}?version={args["api_ver"]}'
     response = requests.request("DELETE", url, headers=build_headers())
     return response
 
 
+# Retrieve projects from a given org that have a specific tag
 def org_projects(org, project_tags, pagination):
     # project tags must be encoded
     if pagination is None:
-        url = 'https://api.snyk.io/rest/orgs/{0}/projects?version={1}&tags={2}'.format(org['id'],
+        url = '{SNYK_REST_API_BASE_URL}/orgs/{0}/projects?version={1}&tags={2}'.format(org['id'],
                                                                                        os.environ["API_VERSION"],
                                                                                        urllib.parse.quote(
                                                                                            project_tags.replace(" ",
                                                                                                                 "")))
     else:
-        url = 'https://api.snyk.io/rest/orgs/{0}/projects?version={1}&tags={2}&starting_after={3}'.format(org['id'],
+        url = '{SNYK_REST_API_BASE_URL}/orgs/{0}/projects?version={1}&tags={2}&starting_after={3}'.format(org['id'],
                                                                                                           os.environ["API_VERSION"],
                                                                                                           urllib.parse.quote(
                                                                                                               project_tags.replace(
@@ -144,6 +146,7 @@ def org_projects(org, project_tags, pagination):
     return response
 
 
+# Retrieve org project issues of a specified severity level
 def project_issues(org, limit, proj_id, issue_type, effective_severity_level, pagination):
     if pagination is None:
         url = f'{SNYK_REST_API_BASE_URL}/orgs/{org["id"]}/issues?version={os.environ["API_VERSION"]}&limit={limit}&scan_item.id={proj_id}&scan_item.type={issue_type}&effective_severity_level={effective_severity_level.replace(" ", "")}'
