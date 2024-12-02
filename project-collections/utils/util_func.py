@@ -1,7 +1,7 @@
 import json
-import os
+
 from apis.pagination import next_page
-from apis.rest_api import groups, group_orgs, get_collections, create_a_collection
+from apis.rest_api import groups, group_orgs, get_collections, get_collection, create_a_collection
 
 
 
@@ -66,6 +66,7 @@ def find_collection(args, org):
 
         for coll in collections:
             if coll['attributes']['name'] == args["collection_name"]:
+                collection = get_collection(org, coll['id'])
                 return coll['id']
 
         return create_a_collection(args, org)
