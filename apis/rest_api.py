@@ -129,19 +129,16 @@ def remove_collection(args, org, collection_id):
 def org_projects(org, project_tags, pagination):
     # project tags must be encoded
     if pagination is None:
-        url = '{SNYK_REST_API_BASE_URL}/orgs/{0}/projects?version={1}&tags={2}'.format(org['id'],
-                                                                                       os.environ["API_VERSION"],
-                                                                                       urllib.parse.quote(
-                                                                                           project_tags.replace(" ",
-                                                                                                                "")))
+        url = '{0}/orgs/{1}/projects?version={2}&tags={3}'.format( SNYK_REST_API_BASE_URL,
+                                                                   org['id'],
+                                                                   os.environ["API_VERSION"],
+                                                                   urllib.parse.quote(project_tags.replace(" ","")))
     else:
-        url = '{SNYK_REST_API_BASE_URL}/orgs/{0}/projects?version={1}&tags={2}&starting_after={3}'.format(org['id'],
-                                                                                                          os.environ["API_VERSION"],
-                                                                                                          urllib.parse.quote(
-                                                                                                              project_tags.replace(
-                                                                                                                  " ",
-                                                                                                                  "")),
-                                                                                                          pagination)
+        url = '{0}/orgs/{1}/projects?version={2}&tags={3}&starting_after={4}'.format(SNYK_REST_API_BASE_URL,
+                                                                                     org['id'],
+                                                                                     os.environ["API_VERSION"],
+                                                                                     urllib.parse.quote(project_tags.replace(" ","")),
+                                                                                     pagination)
     response = requests.request("GET", url, headers=build_headers())
     return response
 
