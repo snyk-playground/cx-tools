@@ -5,8 +5,10 @@ from integrations.utils.util_func import report_adoption_maturity
 
 
 def get_arguments():
-    parser = argparse.ArgumentParser(description='This script enables you to configure IQ Server from JSON\
-     data, thus supporting the config-as-code requirement of Sonatype customers')
+    parser = argparse.ArgumentParser(description='This script enables you to benchmark persisted SCM configuration'
+                                                 'data against a known baseline configuration to identify disparity'
+                                                 'with such baseline. Snyk customers can use this to understand their '
+                                                 'SDLC controls and effect configured appetite to risk.')
     parser.add_argument('-a', '--snyk_token', default=None)
     parser.add_argument('-c', '--config', required=True)
     parser.add_argument('-v', '--api_ver', default="2024-08-15")

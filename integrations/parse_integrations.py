@@ -6,8 +6,8 @@ from integrations.utils.util_func import parse_integrations
 
 
 def get_arguments():
-    parser = argparse.ArgumentParser(description='This script enables you to configure IQ Server from JSON\
-     data, thus supporting the config-as-code requirement of Sonatype customers')
+    parser = argparse.ArgumentParser(description='This script enables you to persist SCM integration data for all/some '
+                                                 'orgs within a Snyk group.')
     parser.add_argument('-a', '--snyk_token', default=None)
     parser.add_argument('-g', '--grp_name', required=True)
     parser.add_argument('-v', '--api_ver', default="2024-08-15")
