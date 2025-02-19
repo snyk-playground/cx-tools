@@ -5,7 +5,9 @@ from integrations.utils.util_func import update_integrations
 
 
 def get_arguments():
-    parser = argparse.ArgumentParser(description='Script to update Snyk integration settings')
+    parser = argparse.ArgumentParser(description='This script enables users to configure SCM integration data, thus '
+                                                 'ensuring Snyk customers can deploy security controls across the SDLC '
+                                                 '(at scale) aligned with their risk appetite.')
     parser.add_argument('-a', '--snyk_token', default=None)
     parser.add_argument('-c', '--config', required=True)
     parser.add_argument('-v', '--api_ver', default="2024-08-15")
