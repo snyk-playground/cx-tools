@@ -50,7 +50,7 @@ python3 integrations/tpr.py
     --org_names="<target-snyk-org-name1,target-snyk-org-name2>" 
     --api_ver="<snyk-rest-api-version>"
 
-python3 integrations/parse_integrations.py
+python3 integrations/tpr.py
     --snyk_token="<snyk-token-value>" 
     --grp_name="kevin.matthews Group"
     --org_names="Org1,Org2" 
