@@ -143,6 +143,22 @@ def org_projects(org, project_tags, pagination):
     return response
 
 
+# Retrieve projects from a given org that have a specific tag
+def org_projects(org, pagination):
+    # project tags must be encoded
+    if pagination is None:
+        url = '{0}/orgs/{1}/projects?version={2}'.format( SNYK_REST_API_BASE_URL,
+                                                                   org['id'],
+                                                                   os.environ["API_VERSION"])
+    else:
+        url = '{0}/orgs/{1}/projects?version={2}&starting_after={3}'.format(SNYK_REST_API_BASE_URL,
+                                                                                     org['id'],
+                                                                                     os.environ["API_VERSION"],
+                                                                                     pagination)
+    response = requests.request("GET", url, headers=build_headers())
+    return response
+
+
 # Retrieve org project issues of a specified severity level
 def project_issues(org, limit, proj_id, issue_type, effective_severity_level, pagination):
     if pagination is None:
@@ -170,3 +186,22 @@ def create_service_account(org_id, role_id, svc_ac_name):
 
     # Make the POST request to create the service account
     return requests.post(url, json=payload, headers=build_headers())
+
+
+# Function to parse all target for a known organisation
+def org_targets(org_id, pagination):
+    if pagination is None:
+        url = f'{SNYK_REST_API_BASE_URL}/orgs/{org_id}/targets?version={os.environ["API_VERSION"]}'
+    else:
+        url = f'{SNYK_REST_API_BASE_URL}/orgs/{org_id}/targets?version={os.environ["API_VERSION"]}&starting_after={pagination}'
+
+    response = requests.request("GET", url, headers=build_headers())
+    return response
+
+
+# Function to parse all target for a known organisation
+def target_details(org_id, target_id):
+    url = f'{SNYK_REST_API_BASE_URL}/orgs/{org_id}/targets/{target_id}?version={os.environ["API_VERSION"]}'
+    response = requests.request("GET", url, headers=build_headers())
+    return response
+
