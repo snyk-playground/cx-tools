@@ -126,35 +126,30 @@ def remove_collection(args, org, collection_id):
 
 
 # Retrieve projects from a given org that have a specific tag
-def org_projects(org, project_tags, pagination):
+def org_projects(org, pagination, project_tags=None):
     # project tags must be encoded
-    if pagination is None:
-        url = '{0}/orgs/{1}/projects?version={2}&tags={3}'.format( SNYK_REST_API_BASE_URL,
-                                                                   org['id'],
-                                                                   os.environ["API_VERSION"],
-                                                                   urllib.parse.quote(project_tags.replace(" ","")))
+    if project_tags is None:
+        if pagination is None:
+            url = '{0}/orgs/{1}/projects?version={2}'.format(SNYK_REST_API_BASE_URL,
+                                                             org['id'],
+                                                             os.environ["API_VERSION"])
+        else:
+            url = '{0}/orgs/{1}/projects?version={2}&starting_after={3}'.format(SNYK_REST_API_BASE_URL,
+                                                                                org['id'],
+                                                                                os.environ["API_VERSION"],
+                                                                                pagination)
     else:
-        url = '{0}/orgs/{1}/projects?version={2}&tags={3}&starting_after={4}'.format(SNYK_REST_API_BASE_URL,
-                                                                                     org['id'],
-                                                                                     os.environ["API_VERSION"],
-                                                                                     urllib.parse.quote(project_tags.replace(" ","")),
-                                                                                     pagination)
-    response = requests.request("GET", url, headers=build_headers())
-    return response
-
-
-# Retrieve projects from a given org that have a specific tag
-def org_projects(org, pagination):
-    # project tags must be encoded
-    if pagination is None:
-        url = '{0}/orgs/{1}/projects?version={2}'.format( SNYK_REST_API_BASE_URL,
-                                                                   org['id'],
-                                                                   os.environ["API_VERSION"])
-    else:
-        url = '{0}/orgs/{1}/projects?version={2}&starting_after={3}'.format(SNYK_REST_API_BASE_URL,
-                                                                                     org['id'],
-                                                                                     os.environ["API_VERSION"],
-                                                                                     pagination)
+        if pagination is None:
+            url = '{0}/orgs/{1}/projects?version={2}&tags={3}'.format( SNYK_REST_API_BASE_URL,
+                                                                       org['id'],
+                                                                       os.environ["API_VERSION"],
+                                                                       urllib.parse.quote(project_tags.replace(" ","")))
+        else:
+            url = '{0}/orgs/{1}/projects?version={2}&tags={3}&starting_after={4}'.format(SNYK_REST_API_BASE_URL,
+                                                                                         org['id'],
+                                                                                         os.environ["API_VERSION"],
+                                                                                         urllib.parse.quote(project_tags.replace(" ","")),
+                                                                                         pagination)
     response = requests.request("GET", url, headers=build_headers())
     return response
 
