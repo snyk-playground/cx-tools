@@ -154,6 +154,22 @@ def org_projects(org, pagination, project_tags=None):
     return response
 
 
+# Retrieve projects from a given org that have a specific tag
+def org_projects(org, pagination):
+    # project tags must be encoded
+    if pagination is None:
+        url = '{0}/orgs/{1}/projects?version={2}'.format( SNYK_REST_API_BASE_URL,
+                                                                   org['id'],
+                                                                   os.environ["API_VERSION"])
+    else:
+        url = '{0}/orgs/{1}/projects?version={2}&starting_after={3}'.format(SNYK_REST_API_BASE_URL,
+                                                                                     org['id'],
+                                                                                     os.environ["API_VERSION"],
+                                                                                     pagination)
+    response = requests.request("GET", url, headers=build_headers())
+    return response
+
+
 # Retrieve org project issues of a specified severity level
 def project_issues(org, limit, proj_id, issue_type, effective_severity_level, pagination):
     if pagination is None:
