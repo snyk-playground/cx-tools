@@ -32,7 +32,7 @@ def tagged_project_issues(args):
                         while True:
                             # Use of the project_tags ensures only those with the right tag are returned
                             op_response = json.loads(
-                                org_projects(org, args["project_tags"], op_pagination).text)
+                                org_projects(org, op_pagination, args["project_tags"], ).text)
 
                             for project in op_response['data']:
                                 # iterate over the tags in each project and persist it i it has one of the tags
