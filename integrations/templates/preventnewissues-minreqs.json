@@ -1,34 +1,25 @@
 {
   "github": {
     "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln"
+        "customRule": {
+            "type": "severity",
+            "score": null,
+            "severityTypes": [
+                "critical",
+                "high"
+            ]
+        },
+        "freshPrsEnabled": true,
+        "backlogPrStrategy": "vuln",
+        "backlogPrsEnabled": false,
+        "usePatchRemediation": false
     },
     "pullRequestFailOnlyForHighSeverity": true,
     "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true,
+    "pullRequestTestCodeEnabled": true,
+    "pullRequestTestCodeSeverity": "high",
     "reachableVulns": {
       "enabled": false
     }
-  },
-  "github-cloud-app": {
-    "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln"
-    },
-    "pullRequestFailOnlyForHighSeverity": true,
-    "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true,
-    "reachableVulns": {
-      "enabled": false
-    }
-  },
-  "gitlab": {
-    "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln"
-    },
-    "pullRequestFailOnlyForHighSeverity": true,
-    "pullRequestFailOnlyForIssuesWithFix": true
   }
 }
