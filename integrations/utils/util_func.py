@@ -1,11 +1,18 @@
 import json
+import os
+
 import jsoncomparison
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.pdfgen import canvas
 
 from apis.pagination import next_page
 from apis.rest_api import groups, group_orgs
 from apis.snyk_api import org_integrations, get_org_integration_settings, update_org_integration_settings
 
 CFG_DELIMITER = "::"
+width, height = A4
+y = 0
 
 # Handle pagination
 # Is the current org in scope?
@@ -128,6 +135,11 @@ def report_adoption_maturity(args):
     try:
         orgs = load_json_file(args["config"])
         template_file = args['template']
+        templates = dict()
+        templates[f'{template_file}'] = load_json_file(f"{template_file}")
+        report_file = os.path.splitext(args["config"])[0] + ".pdf"
+        c = canvas.Canvas(report_file, pagesize=A4)
+        write_adoption_maturity_report_template(templates, c)
         templates = load_json_file(f"{template_file}")
 
         for org in orgs:
@@ -141,10 +153,86 @@ def report_adoption_maturity(args):
                     if len(diff):
                         print(f"Organisation {org.split(CFG_DELIMITER)[0]} - {template_name} integration configuration benchmark results against {template_file}")
                         print(json.dumps(diff, indent=4))
+                        write_adoption_maturity_report_data(diff, org.split(CFG_DELIMITER)[0]+'::'+template_name, c)
+
                     else:
                         print(f"Organisation {org.split(CFG_DELIMITER)[0]} - {template_name} integration configuration is aligned with {template_file}")
 
                 except KeyError as err:
                     print(f"Organisation {org.split(CFG_DELIMITER)[0]} {err} integration. Template configuration does not exist in {template_file}")
+
+        # Save PDF
+        c.save()
+        print(f"PDF generated: {report_file}")
+
     except FileNotFoundError as err:
         print(err)
+
+
+def draw_line(text, canvass, indent=0):
+    global y
+    if y < 2 * cm:
+        canvass.showPage()
+        y = height - 2 * cm
+    canvass.drawString(2 * cm + indent * cm, y, text)
+    y -= 0.5 * cm
+
+
+# The template config data is first written to the PDF report to show the baseline against which subsequent
+# reporting is done
+def write_adoption_maturity_report_template(data, c):
+    y = height - 2 * cm
+
+    # Render content
+    draw_line("Snyk Integrations Report", c)
+    draw_line("=" * 60, c)
+
+    for group, integrations in data.items():
+        for integration, settings in integrations.items():
+            if settings:
+                draw_line(f"\n{group.split('::')[0]}::{integration.split('::')[0]}", c)
+                for key, value in settings.items():
+                    draw_line(f"{key}: {value}", c, 1)
+
+    draw_line("=" * 60, c)
+    draw_line(" " * 60, c)
+
+
+# The org config compliance against the template is written to the PDF report to show non-compliance
+def write_adoption_maturity_report_data(data, section_title, c):
+    y = height - 2 * cm
+
+    # Render content
+    draw_line(section_title, c)
+    draw_line("=" * 60, c)
+
+    # Extract the data
+    messages = extract_messages(data)
+    for key, message in messages:
+        draw_line(f"{key}: {message}", c, 1)
+
+    draw_line("=" * 60, c)
+    draw_line(" " * 60, c)
+
+
+# Extract the json error messages to an array for rendering
+def extract_messages(d, path=""):
+    items = []
+    for k, v in d.items():
+        current_path = f"{path}.{k}" if path else k
+        if isinstance(v, dict):
+            if "_message" in v:
+                if "Values not equal" in v["_message"]:
+                    items.append((current_path, f"should be '{v['_expected']}'"))
+                elif "Key does not exists" in v["_message"]:
+                    items.append((current_path, f"should be '{v['_expected']}'"))
+                elif "Types not equal" in v["_message"]:
+                    items.append((current_path, f"should be '{v['_expected']}'"))
+                else:
+                    items.append((current_path, v['_message']))
+            else:
+                items.extend(extract_messages(v, current_path))
+        else:
+            pass
+    return items
+
