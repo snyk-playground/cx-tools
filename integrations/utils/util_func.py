@@ -224,7 +224,7 @@ def extract_messages(d, path=""):
             if "_message" in v:
                 if "Values not equal" in v["_message"]:
                     items.append((current_path, f"should be '{v['_expected']}'"))
-                elif "Key does not exists" in v["_message"]:
+                elif "Key does not exist" in v["_message"]:
                     items.append((current_path, f"should be '{v['_expected']}'"))
                 elif "Types not equal" in v["_message"]:
                     items.append((current_path, f"should be '{v['_expected']}'"))
