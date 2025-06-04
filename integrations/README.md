@@ -38,7 +38,9 @@ python3 integrations/parse_integrations.py
     --org_names="Org1,Org2" 
     --api_ver="2024-08-15"
 
-Note that the org_names, snyk_token and api_ver arguments are optional.
+Note that the org_names, snyk_token and api_ver arguments are optional. The token is read from the SNYK_TOKEN 
+environment variable if not supplied. The api_ver assumes a default value if not specified. All orgs are persisted if 
+the org_names argument is not specified.
 ````
 
 # Update Integrations
@@ -64,6 +66,9 @@ python3 integrations/update_integrations.py
     --snyk_token="<snyk-token-value>" 
     --config_file="integrations/kevin.matthews Group--Org1Org2.json"
     --api_ver="2024-08-15"
+    
+Note that the snyk_token and api_ver arguments are optional. The token is read from the SNYK_TOKEN environment variable 
+if not supplied. The api_ver assumes a default value if not specified.
 ````
 ### Apply configuration from a template configuration file
 ````
@@ -81,14 +86,19 @@ python3 integrations/update_integrations.py
     --template="integrations/templates/preventnewissues.json"
     --api_ver="2024-08-15"
 
+Note that the snyk_token and api_ver arguments are optional. The token is read from the SNYK_TOKEN environment variable 
+if not supplied. The api_ver assumes a default value if not specified.
 ````
 
 # Benchmark Adoption Maturity
 This utility allows Snyk customers to parse the persisted configuration and benchmark its alignment with a template
-configuration file. Disparities between the persisted configuration and the template configuration are identified. The 
-'mid-journey' adoption phases have a template that baselines all settings (be they active or not) and also a minimum 
+configuration file. Disparities between the persisted configuration and the template configuration are identified and 
+also written to a PDF report of the same name as the json config file. 
+
+The 'mid-journey' adoption phases have a template that baselines all settings (be they active or not) and also a minimum 
 requirements template that comprises only those config attributes that must be active to achieve the adoption maturity 
-phase. 
+phase. Note that only data identified within the template file is compared with that in the json config file, hence the 
+minimum requirements template is recommended. 
 
 ## How to call benchmark_adoption_maturity.py
 ````
@@ -106,6 +116,8 @@ python3 integrations/parse_integrations.py
     --template "integrations/templates/preventnewissues.json"
     --api_ver="2024-08-15"
 
+Note that the snyk_token and api_ver arguments are optional. The token is read from the SNYK_TOKEN environment variable 
+if not supplied. The api_ver assumes a default value if not specified.
 ````
 
 ### Note:

@@ -3,44 +3,37 @@
     "autoDepUpgradeEnabled": true,
     "autoDepUpgradeIgnoredDependencies": [],
     "autoDepUpgradeLimit": 5,
-    "autoPrivateDepUpgradeEnabled": true,
+    "autoPrivateDepUpgradeEnabled": false,
     "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln",
-      "backlogPrsEnabled": true
+        "customRule": {
+            "type": "severity",
+            "score": null,
+            "severityTypes": [
+                "critical",
+                "high"
+            ]
+        },
+        "freshPrsEnabled": true,
+        "backlogPrStrategy": "vuln",
+        "backlogPrsEnabled": true,
+        "usePatchRemediation": true
+    },
+    "isMajorUpgradeEnabled": false,
+    "manualRemediationPrs": {
+      "useManualPatchRemediation": false
+    },
+    "pullRequestAssignment": {
+      "type": "auto",
+      "enabled": true,
+      "assignees": []
     },
     "pullRequestFailOnlyForHighSeverity": true,
     "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true
-  },
-  "github-cloud-app": {
-    "autoDepUpgradeEnabled": true,
-    "autoDepUpgradeIgnoredDependencies": [],
-    "autoDepUpgradeLimit": 5,
-    "autoPrivateDepUpgradeEnabled": true,
-    "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln",
-      "backlogPrsEnabled": true,
-      "usePatchRemediation": false
-    },
-    "pullRequestFailOnlyForHighSeverity": true,
-    "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true
-  },
-  "gitlab": {
-    "autoDepUpgradeEnabled": true,
-    "autoDepUpgradeIgnoredDependencies": [],
-    "autoDepUpgradeLimit": 5,
-    "autoPrivateDepUpgradeEnabled": true,
-    "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln",
-      "backlogPrsEnabled": true,
-      "usePatchRemediation": true
-    },
-    "pullRequestFailOnlyForHighSeverity": true,
-    "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true
+    "pullRequestTestCodeEnabled": true,
+    "pullRequestTestCodeSeverity": "high",
+    "pullRequestTestEnabled": true,
+    "reachableVulns": {
+      "enabled": false
+    }
   }
 }
