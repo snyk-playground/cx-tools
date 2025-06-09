@@ -1,34 +1,42 @@
 {
   "github": {
     "autoRemediationPrs": {
+      "customRule": {
+        "type": "severity",
+        "score": null,
+        "severityTypes": [
+          "critical",
+          "high"
+        ]
+      },
       "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln"
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": false,
+      "usePatchRemediation": false
     },
     "pullRequestFailOnlyForHighSeverity": true,
     "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true,
-    "reachableVulns": {
-      "enabled": false
-    }
+    "pullRequestTestCodeEnabled": true,
+    "pullRequestTestCodeSeverity": "high"
   },
   "github-cloud-app": {
     "autoRemediationPrs": {
+      "customRule": {
+        "type": "severity",
+        "score": null,
+        "severityTypes": [
+          "critical",
+          "high"
+        ]
+      },
       "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln"
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": false,
+      "usePatchRemediation": true
     },
     "pullRequestFailOnlyForHighSeverity": true,
     "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true,
-    "reachableVulns": {
-      "enabled": false
-    }
-  },
-  "gitlab": {
-    "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln"
-    },
-    "pullRequestFailOnlyForHighSeverity": true,
-    "pullRequestFailOnlyForIssuesWithFix": true
+    "pullRequestTestCodeEnabled": true,
+    "pullRequestTestCodeSeverity": "high"
   }
 }

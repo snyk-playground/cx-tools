@@ -3,10 +3,18 @@
     "autoDepUpgradeEnabled": true,
     "autoDepUpgradeIgnoredDependencies": [],
     "autoDepUpgradeLimit": 5,
-    "autoPrivateDepUpgradeEnabled": true,
+    "autoPrivateDepUpgradeEnabled": false,
     "autoRemediationPrs": {
+      "customRule": {
+        "type": "severity",
+        "score": null,
+        "severityTypes": [
+          "critical",
+          "high"
+        ]
+      },
       "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln",
+      "backlogPrStrategy": "dependency",
       "backlogPrsEnabled": true,
       "usePatchRemediation": true
     },
@@ -20,57 +28,15 @@
       "enabled": true,
       "assignees": []
     },
-    "pullRequestFailOnAnyVulns": true,
+    "pullRequestFailOnAnyCodeIssues": false,
+    "pullRequestFailOnAnyVulns": false,
     "pullRequestFailOnlyForHighSeverity": true,
     "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestCodeEnabled": true,
+    "pullRequestTestCodeSeverity": "high",
     "pullRequestTestEnabled": true,
     "reachableVulns": {
-      "enabled": true
+      "enabled": false
     }
-  },
-  "github-cloud-app": {
-    "autoDepUpgradeEnabled": true,
-    "autoDepUpgradeIgnoredDependencies": [],
-    "autoDepUpgradeLimit": 5,
-    "autoPrivateDepUpgradeEnabled": true,
-    "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln",
-      "backlogPrsEnabled": true,
-      "usePatchRemediation": true
-    },
-    "dockerfileSCMEnabled": true,
-    "isMajorUpgradeEnabled": true,
-    "manualRemediationPrs": {
-      "useManualPatchRemediation": true
-    },
-    "pullRequestAssignment": {
-      "type": "auto",
-      "enabled": true,
-      "assignees": []
-    },
-    "pullRequestFailOnAnyVulns": true,
-    "pullRequestFailOnlyForHighSeverity": true,
-    "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true
-  },
-  "gitlab": {
-    "autoDepUpgradeEnabled": true,
-    "autoDepUpgradeIgnoredDependencies": [],
-    "autoDepUpgradeLimit": 5,
-    "autoPrivateDepUpgradeEnabled": true,
-    "autoRemediationPrs": {
-      "freshPrsEnabled": true,
-      "backlogPrStrategy": "vuln",
-      "backlogPrsEnabled": true,
-      "usePatchRemediation": true
-    },
-    "manualRemediationPrs": {
-      "useManualPatchRemediation": true
-    },
-    "pullRequestFailOnAnyVulns": true,
-    "pullRequestFailOnlyForHighSeverity": true,
-    "pullRequestFailOnlyForIssuesWithFix": true,
-    "pullRequestTestEnabled": true
   }
 }
