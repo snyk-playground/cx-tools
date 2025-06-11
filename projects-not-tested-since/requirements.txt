@@ -2,3 +2,4 @@ pysnyk==0.9.8
 asyncio==3.4.3
 aiohttp==3.8.1
 python-dateutil
+requests>=2.32.4 # not directly required, pinned by Snyk to avoid a vulnerability
