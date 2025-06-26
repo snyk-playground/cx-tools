@@ -32,7 +32,27 @@
       "freshPrsEnabled": true,
       "backlogPrStrategy": "vuln",
       "backlogPrsEnabled": false,
-      "usePatchRemediation": true
+      "usePatchRemediation": false
+    },
+    "pullRequestFailOnlyForHighSeverity": true,
+    "pullRequestFailOnlyForIssuesWithFix": true,
+    "pullRequestTestCodeEnabled": true,
+    "pullRequestTestCodeSeverity": "high"
+  },
+  "github-enterprise": {
+    "autoRemediationPrs": {
+      "customRule": {
+        "type": "severity",
+        "score": null,
+        "severityTypes": [
+          "critical",
+          "high"
+        ]
+      },
+      "freshPrsEnabled": false,
+      "backlogPrStrategy": "vuln",
+      "backlogPrsEnabled": false,
+      "usePatchRemediation": false
     },
     "pullRequestFailOnlyForHighSeverity": true,
     "pullRequestFailOnlyForIssuesWithFix": true,

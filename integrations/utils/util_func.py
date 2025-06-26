@@ -12,7 +12,7 @@ from apis.snyk_api import org_integrations, get_org_integration_settings, update
 
 CFG_DELIMITER = "::"
 width, height = A4
-y = 0
+y = height - 2 * cm
 
 # Handle pagination
 # Is the current org in scope?
