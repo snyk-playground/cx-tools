@@ -223,9 +223,7 @@ def export_group_data(args):
         "data": {
             "attributes": {
                 "filters": {
-                    "general": {
-                        "orgs": args["orgs"]
-                    },
+                    "orgs": args["orgs"],
                     "introduced": {
                         "from": args["introduced_from"],
                         "to": args["introduced_to"]
