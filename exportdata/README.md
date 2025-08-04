@@ -63,6 +63,6 @@ Note A: Dates - You may specify a relative offset value (ie -30 or +1) with resp
 you may specify the date-time format to which the offset is converted ("2025-07-21T00:00:00Z") for absolute dates.
 
 Note B: Columns - You may specify comma seperated column name (ie "SCORE, CVE"). Alternatively, leave this blank and the
-['columns.txt'](./columns.txt) file will be parsed. You can of course edit this. Ensure you refer to Snyk's ['Issue Columns Dictionary'](https://docs.snyk.io/manage-risk/reporting/issue-columns-dictionary)
+['columns.txt'](./columns.txt) file will be parsed. You can of course edit this. Ensure you refer to Snyk's ['Issue Columns Dictionary'](https://docs.snyk.io/snyk-api/using-specific-snyk-apis/export-api-specifications-columns-and-filters#available-columns)
 
 ````
