@@ -52,3 +52,29 @@ Script will output `project_data.json` file. Edit the file as necessary. Example
 ```sh
 python3 change_proj_status.py project_data.json --action activate/deactivate --token your_api_token
 ```
+
+
+## Filter Results using jq
+
+https://jqlang.github.io/jq/manual/
+
+### Project Status
+
+`|  jq '.[] | select(.status == "[active|inactive]")'`
+
+### Snyk Organisation Name
+
+`|  jq '.[] | select(.org_name == "[SnykOrgName]")'`
+
+### Target File Name
+
+`| jq '.[] | select(.target_file | contains("yaml"))`
+
+### Snyk Product Type
+
+`|  jq '.[] | select(.project_type == "sast")'`
+
+
+#### All project types available at:
+https://docs.snyk.io/snyk-api/api-endpoints-index-and-tips/project-type-responses-from-the-api
+
