@@ -21,6 +21,7 @@ This software has been written and tested using python 3.10.4
 This utility calls the ['export'](https://apidocs.snyk.io/?version=2024-10-15#post-/groups/-group_id-/export) api in order to allow issues to be exported to a csv file. This matches the behaviour
 of the UI when viewing the Issue Details report. You should use this mechanism if you wish to download large volumes
 of data that would otherwise take a significant number of api cals using the ['issues'](https://apidocs.snyk.io/?version=2024-10-15#get-/groups/-group_id-/issues) api.
+The export api now incorporates support to download usage data. The 'dataset' argument allows users to choose issues or usage data download.
 
 ## How to call export-data.py
 ````
