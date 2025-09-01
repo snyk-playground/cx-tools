@@ -22,11 +22,11 @@ This utility calls the ['export'](https://apidocs.snyk.io/?version=2024-10-15#po
 of the UI when viewing the Issue Details report. You should use this mechanism if you wish to download large volumes
 of data that would otherwise take a significant number of api cals using the ['issues'](https://apidocs.snyk.io/?version=2024-10-15#get-/groups/-group_id-/issues) api.
 
-## How to call export-issue-details-data.py
+## How to call export-data.py
 ````
 Run from the cx-tools/exportdata directory.
 
-python3 export-issue-details-data.py
+python3 export-data.py
     --snyk_token="<snyk-token-value>" 
     --grp_id="<snyk-group-id>"
     --dataset="issues|usage"
@@ -42,7 +42,7 @@ python3 export-issue-details-data.py
     --output_file="<output_file.csv>"
 
 
-python3 export-issue-details-data.py
+python3 export-data.py
     --snyk_token="<snyk-token-value>" 
     --dataset="issues"
     --grp_id="123-4567-890"
