@@ -245,7 +245,7 @@ def export_group_data(args):
                 "formats": [
                     "csv"
                 ],
-                "dataset": "issues"
+                "dataset": args["dataset"]
             },
             "type": "resource"
         }

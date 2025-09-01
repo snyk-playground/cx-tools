@@ -29,6 +29,7 @@ Run from the cx-tools/exportdata directory.
 python3 export-issue-details-data.py
     --snyk_token="<snyk-token-value>" 
     --grp_id="<snyk-group-id>"
+    --dataset="issues|usage"
     --introduced_from="Note A"
     --introduced_to="Note A"
     --updateed_to="Note A"
@@ -43,6 +44,7 @@ python3 export-issue-details-data.py
 
 python3 export-issue-details-data.py
     --snyk_token="<snyk-token-value>" 
+    --dataset="issues"
     --grp_id="123-4567-890"
     --introduced_from="-30"
     --introduced_to="+1"
@@ -57,12 +59,13 @@ python3 export-issue-details-data.py
 
 
 ````
-Note that the only mandatory argument is the 'grp_id'. All other arguments have default values.
+Note that the only mandatory arguments are the 'grp_id' and 'dataset'. All other arguments have default values.
 
 Note A: Dates - You may specify a relative offset value (ie -30 or +1) with respect to today's date. Alternatively, 
 you may specify the date-time format to which the offset is converted ("2025-07-21T00:00:00Z") for absolute dates.
 
 Note B: Columns - You may specify comma seperated column name (ie "SCORE, CVE"). Alternatively, leave this blank and the
-['columns.txt'](./columns.txt) file will be parsed. You can of course edit this. Ensure you refer to Snyk's ['Export API:Available Columns'](https://docs.snyk.io/snyk-api/using-specific-snyk-apis/export-api-specifications-columns-and-filters#available-columns)
+['issues-columns.txt'](./issues-columns.txt) or ['usage-columns.txt'](./usage-columns.txt) file will be parsed. 
+You can of course edit this. Ensure you refer to Snyk's ['Export API:Available Columns'](https://docs.snyk.io/snyk-api/using-specific-snyk-apis/export-api-specifications-columns-and-filters#available-columns)
 
 ````
