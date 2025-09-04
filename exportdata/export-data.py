@@ -18,9 +18,13 @@ def get_n_days_ago(n):
         # If it was passed as a formatted string
         return n
 
-def read_columns_file():
+def read_columns_file(dataset):
     # Read the file and strip whitespace
-    with open("columns.txt", "r") as file:
+    filename = "issues-columns.txt"
+    if dataset == "usage":
+        filename = "usage-columns.txt"
+
+    with open(filename, "r") as file:
         columns = [line.strip() for line in file if line.strip()]
     return columns
 
@@ -35,6 +39,7 @@ def get_arguments():
                                                  'flexibility to specify the payload required.')
     parser.add_argument('-a', '--snyk_token', default=None)
     parser.add_argument('-g', '--grp_id', required=True)
+    parser.add_argument('-d', '--dataset', required=True)
     parser.add_argument('-f', '--introduced_from', default=None)
     parser.add_argument('-t', '--introduced_to', default=None)
     parser.add_argument('-u', '--updated_from', default=None)
@@ -77,7 +82,7 @@ if __name__ == '__main__':
 
     # Parse the columns
     if not args["columns"]:
-        args["columns"] = read_columns_file()
+        args["columns"] = read_columns_file(args["dataset"].lower())
     else:
         args["columns"] = split_and_clean(args["columns"])
 
