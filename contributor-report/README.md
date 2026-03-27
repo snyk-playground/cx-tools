@@ -127,6 +127,7 @@ If you're using a regional Snyk deployment, update the base URL accordingly:
 | Region | Base URL |
 |--------|----------|
 | US (default) | `https://api.snyk.io/rest` |
+| US2 | `https://api.us.snyk.io/rest` |
 | EU | `https://api.eu.snyk.io/rest` |
 | AU | `https://api.au.snyk.io/rest` |
 
