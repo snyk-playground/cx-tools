@@ -8,5 +8,6 @@ obj/
 # OS files
 .DS_Store
 
-# Snyk Security Extension - AI Rules 
+# Snyk Security Extension - AI Rules
 .github/instructions/snyk_rules.instructions.md
+.vscode/*
