@@ -1,0 +1,3 @@
+pysnyk==0.9.19
+yaspin==3.0.2
+urllib3==2.6.3
