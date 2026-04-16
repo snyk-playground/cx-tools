@@ -13,13 +13,15 @@ The script uses the Snyk API with **retry behavior for rate limits**: HTTP **429
 
 1. Clone this repository locally.
 
-2. (Optional) Set your Snyk API token. You can find it in your [General Account Settings](https://app.snyk.io/account) after you sign in to Snyk.
+2. **Authenticate.** The script picks credentials in this order (first match wins):
 
-   ```bash
-   export SNYK_TOKEN={API_TOKEN}
-   ```
+   | Priority | Variables | Notes |
+   | --- | --- | --- |
+   | 1 | `SNYK_OAUTH_CLIENT_ID` and `SNYK_OAUTH_CLIENT_SECRET` | OAuth 2.0 **client credentials** (recommended for automation). Short-lived access tokens are obtained from the OAuth token endpoint and refreshed automatically before expiry. |
+   | 2 | `SNYK_OAUTH_TOKEN` | A short-lived OAuth **access token** (same usage as the Snyk CLI). You must refresh it yourself when it expires; use client credentials instead if you need long runs. |
+   | 3 | `SNYK_TOKEN` | Classic API token (`Authorization: token …`). **Not available in Snyk for Government (FedRAMP)**; see below. |
 
-   If `SNYK_TOKEN` is not set, the script prompts for the token interactively.
+   If none of these are set and you are **not** targeting Gov, the script prompts for `SNYK_TOKEN` interactively.
 
 3. Install dependencies:
 
@@ -28,6 +30,28 @@ The script uses the Snyk API with **retry behavior for rate limits**: HTTP **429
    ```
 
 4. Run `main.py` with the options below.
+
+## Snyk for Government (FedRAMP / `SNYK-GOV-01`)
+
+[Snyk for Government (US)](https://docs.snyk.io/snyk-data-and-governance/snyk-for-government-us) does **not** allow static API tokens. You must use **OAuth 2.0**—typically a service account with the **client credentials** grant. Access tokens are used like API keys but with `Authorization: Bearer` semantics and a short TTL; this script refreshes them when you use `SNYK_OAUTH_CLIENT_ID` / `SNYK_OAUTH_CLIENT_SECRET`.
+
+1. Create an OAuth 2.0 service account (UI or API) and store **client ID** and **client secret** securely.
+2. Point the script at the Gov API endpoints using **`--environment SNYK-GOV-01`** (or `export SNYK_ENVIRONMENT=SNYK-GOV-01`). That selects `https://api.snykgov.io` for API v1, REST, and `/oauth2/token`, consistent with [regional URL documentation](https://docs.snyk.io/snyk-data-and-governance/regional-hosting-and-data-residency).
+3. Export credentials and run:
+
+```bash
+export SNYK_ENVIRONMENT=SNYK-GOV-01
+export SNYK_OAUTH_CLIENT_ID="your-client-id"
+export SNYK_OAUTH_CLIENT_SECRET="your-client-secret"
+pip install -r requirements.txt
+python3 main.py --orgs your-org-slug
+```
+
+Optional: override URLs with `--api-url`, `--rest-api-url`, or `--oauth-token-url`, or the `SNYK_API_URL`, `SNYK_REST_API_URL`, and `SNYK_OAUTH_TOKEN_URL` environment variables. For security, URLs must use **HTTPS** and hostnames under **`*.snyk.io`** or **`*.snykgov.io`**. If your tenant uses another hostname, set `SNYK_ALLOW_UNVERIFIED_API_URL=1` (HTTPS is still required).
+
+## Region / environment (`--environment`)
+
+Use the same region names as `snyk config environment` (for example `SNYK-US-02`, `SNYK-EU-01`, `SNYK-GOV-01`). This sets default API and OAuth token URLs. You can override individual URLs as needed.
 
 ## Selecting organizations (`--orgs`)
 
@@ -83,7 +107,9 @@ Example:
 python3 main.py --orgs my-org --rate-limit-attempts 12
 ```
 
-# Full example
+# Full examples
+
+**Commercial (API token):**
 
 ```bash
 export SNYK_TOKEN="your-api-token"
@@ -95,3 +121,14 @@ python3 main.py \
 ```
 
 Same run using the other flag: `python3 main.py --orgs my-org-slug --origins github github-enterprise --rate-limit-attempts 8`.
+
+**OAuth client credentials (Enterprise / Gov-compatible):**
+
+```bash
+export SNYK_OAUTH_CLIENT_ID="…"
+export SNYK_OAUTH_CLIENT_SECRET="…"
+# For Gov:
+# export SNYK_ENVIRONMENT=SNYK-GOV-01
+pip install -r requirements.txt
+python3 main.py --orgs my-org-slug
+```
