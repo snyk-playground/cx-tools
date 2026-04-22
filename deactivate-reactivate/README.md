@@ -29,7 +29,9 @@ The script uses the Snyk API with **retry behavior for rate limits**: HTTP **429
    pip install -r requirements.txt
    ```
 
-4. Run `main.py` with the options below.
+4. **Set the API region** if your Snyk organization is not on the default instance. Use `SNYK_ENVIRONMENT` and/or `--environment` so API v1, REST, and the OAuth token endpoint all match your tenant (see the **Region / environment** section below). If you use `snyk config environment` for the CLI, use the same value here.
+
+5. Run `main.py` with the options below.
 
 ## Snyk for Government (FedRAMP / `SNYK-GOV-01`)
 
@@ -49,9 +51,39 @@ python3 main.py --orgs your-org-slug
 
 Optional: override URLs with `--api-url`, `--rest-api-url`, or `--oauth-token-url`, or the `SNYK_API_URL`, `SNYK_REST_API_URL`, and `SNYK_OAUTH_TOKEN_URL` environment variables. For security, URLs must use **HTTPS** and hostnames under **`*.snyk.io`** or **`*.snykgov.io`**. If your tenant uses another hostname, set `SNYK_ALLOW_UNVERIFIED_API_URL=1` (HTTPS is still required).
 
-## Region / environment (`--environment`)
+## Region / environment
 
-Use the same region names as `snyk config environment` (for example `SNYK-US-02`, `SNYK-EU-01`, `SNYK-GOV-01`). This sets default API and OAuth token URLs. You can override individual URLs as needed.
+Snyk hosts data in [regional API endpoints](https://docs.snyk.io/snyk-data-and-governance/regional-hosting-and-data-residency). This script must use the same region as the org you are managing, or you will not see the right organizations and projects (or calls may fail).
+
+**Ways to set the region (pick one or combine; CLI flags override the env var where both apply):**
+
+- **`export SNYK_ENVIRONMENT=...`** before running the script. If unset, the default is **`SNYK-US-01`**.
+- **`--environment NAME`** on the command line, for example `python3 main.py --environment SNYK-EU-01 --orgs my-org`.
+
+Each preset below sets the **API v1 base**, **REST API base**, and **OAuth2 token** URL together (aligned with `snyk config environment`):
+
+| Name | Notes |
+| --- | --- |
+| `SNYK-US-01` | Default when `SNYK_ENVIRONMENT` is not set. |
+| `SNYK-US-02` | United States (e.g. `api.us.snyk.io`) |
+| `SNYK-EU-01` | Europe |
+| `SNYK-AU-01` | Australia |
+| `SNYK-GOV-01` | Snyk for Government (FedRAMP); also see the **Snyk for Government** section above. |
+
+**Examples:**
+
+```bash
+# EU org — env var
+export SNYK_ENVIRONMENT=SNYK-EU-01
+python3 main.py --orgs my-org
+```
+
+```bash
+# US-02 org — flag only
+python3 main.py --environment SNYK-US-02 --orgs my-org
+```
+
+**Advanced:** Override individual bases without changing the rest of the preset: `--api-url`, `--rest-api-url`, and `--oauth-token-url`, or `SNYK_API_URL`, `SNYK_REST_API_URL`, and `SNYK_OAUTH_TOKEN_URL`. Use the same HTTPS and hostname rules as in the **Snyk for Government** section (including `SNYK_ALLOW_UNVERIFIED_API_URL` for nonstandard hosts).
 
 ## Selecting organizations (`--orgs`)
 
@@ -106,6 +138,15 @@ Example:
 ```bash
 python3 main.py --orgs my-org --rate-limit-attempts 12
 ```
+
+## Dry run (`--dry-run`) and verbose (`-v` / `--verbose`)
+
+- **`--dry-run`** — Lists orgs and projects that would be cycled; does **not** call deactivate or activate. Use to confirm the org, region, and (if any) origin filter before a real run.
+- **`-v` / `--verbose`** — Prints the resolved **environment and API base URLs**, every org the token can see (id and slug), and for each project the **project id**, **monitored** flag, and each API **ok** result. Use when a run “succeeds” but you are unsure anything happened, or the Snyk UI is confusing.
+
+**If the script exits cleanly but the UI “doesn’t change”:** a full cycle **deactivates and then reactivates** every selected project, so the **normal end state** is still **active** / monitored in the UI—only the **webhooks / integration** are refreshed, which may not look like a visible status flip. If you see a **warning** that no projects were processed, check **region** (`--environment`), **org** slug or UUID, and **`--origins`** (try omitting the origin filter once). If the script prints that some org names were not found, the token or region may not match that org.
+
+**`RequestsDependencyWarning` (urllib3 / chardet / charset_normalizer):** That message comes from the `requests` library on import. It often appears when **`chardet` 6.x** is installed: `requests` only accepts an older `chardet` (see the `chardet` line in `requirements.txt`). Reinstall with `pip install -U -r requirements.txt` (ideally in a venv) so dependencies match. The script still runs; the warning is from `requests` / your environment, not this repo’s code.
 
 # Full examples
 

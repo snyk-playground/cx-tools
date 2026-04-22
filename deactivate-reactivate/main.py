@@ -462,6 +462,24 @@ def main() -> None:
             "Also set via SNYK_OAUTH_TOKEN_URL."
         ),
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "List organizations and projects that would be cycled; do not call "
+            "deactivate or activate. Still requires valid credentials to list data."
+        ),
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help=(
+            "Print environment/API endpoints, which organizations the token can see, "
+            "and per-project API details (id, monitored flag, result). Use when results "
+            "in the Snyk UI are unclear or something seems skipped."
+        ),
+    )
     args = parser.parse_args()
 
     allowed_origins = _parse_allowed_origins(args)
@@ -525,24 +543,44 @@ def main() -> None:
         print(f"💥 {TOKEN_ERROR_HINT}")
         raise SystemExit(1)
 
-    if not input_orgs:
+    if args.verbose:
         print(
-            "Input the org slug(s) or org id(s) (UUID) for which you would like "
-            "to reactivate projects to generate webhooks."
+            f"\n[verbose] environment={env_name!r} api_v1={urls['api_url']!r} "
+            f"rest={urls['rest_api_url']!r} oauth={urls['oauth_token_url']!r}\n"
+            f"[verbose] this token can see {len(user_orgs)} organization(s):"
         )
+        for o in user_orgs:
+            print(f"  - id={o.id} slug={o.slug!r} name={o.name!r}")
+        print()
+
+    if not input_orgs:
+        prompt = (
+            "to preview which projects would be cycled (deactivate + reactivate)"
+            if args.dry_run
+            else "to reactivate projects to generate webhooks"
+        )
+        print(f"Input the org slug(s) or org id(s) (UUID) for which you would like {prompt}.")
         input_orgs = input().split()
 
+    total_projects_cycled = 0
     for curr_org in user_orgs:
         matched = [t for t in input_orgs if _org_matches_token(curr_org, t)]
         if not matched:
             continue
         for t in matched:
             input_orgs.remove(t)
-        print(
-            "Processing"
-            + """ \033[1;32m"{}" """.format(curr_org.name)
-            + "\u001b[0morganization"
-        )
+        if args.dry_run:
+            print(
+                "\n\u001b[1;33m[DRY-RUN]\u001b[0m No API changes will be made for organization "
+                f'\033[1;32m"{curr_org.name}"\u001b[0m (projects listed below are what '
+                "would be deactivated, then reactivated).\n"
+            )
+        else:
+            print(
+                "Processing"
+                + """ \033[1;32m"{}" """.format(curr_org.name)
+                + "\u001b[0morganization"
+            )
 
         projects = [
             p
@@ -550,10 +588,38 @@ def main() -> None:
             if _should_process_project(p.origin, allowed_origins)
         ]
 
+        if args.verbose:
+            print(
+                f"[verbose] matched org: id={curr_org.id} slug={curr_org.slug!r} "
+                f'name="{curr_org.name}" — {len(projects)} project(s) after origin filter\n'
+            )
+
+        if not args.dry_run and not projects:
+            print(
+                "\n\u001b[1;33mWARNING\u001b[0m: No projects to process in this org after "
+                "applying the origin filter (if any). No deactivate/activate was called for "
+                f"organization \"{curr_org.name}\" (id {curr_org.id}). "
+                "If that is unexpected, check \u001b[1m--origins\u001b[0m, "
+                "\u001b[1m--environment\u001b[0m (region), and that the org has imported projects.\n"
+            )
+        if args.dry_run and projects:
+            print(
+                f"  \u001b[90m{len(projects)} project(s) would be cycled in this org."
+                + "\u001b[0m"
+            )
+        elif args.dry_run:
+            print("  \u001b[90mNo projects match the origin filter (if any) in this org.\u001b[0m")
+
         for curr_project in projects:
             curr_project_details = (
                 f"Origin: {curr_project.origin}, Type: {curr_project.type}"
             )
+            if args.dry_run:
+                print(
+                    f"    [DRY-RUN] would deactivate: \u001b[1;33m{curr_project.name}\u001b[0m  "
+                    f"(\u001b[34m{curr_project_details}\u001b[0m)"
+                )
+                continue
             action = "Deactivating"
             spinner = yaspin(
                 text=f"{action}\033[1;33m {curr_project.name}", color="yellow"
@@ -563,7 +629,14 @@ def main() -> None:
             )
             spinner.start()
             try:
-                curr_project.deactivate()
+                if args.verbose:
+                    print(
+                        f"    [verbose] POST deactivate project id={curr_project.id} "
+                        f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                    )
+                ok = curr_project.deactivate()
+                if args.verbose:
+                    print(f"    [verbose] deactivate response ok={ok!r}")
                 spinner.ok("🆗 ")
             except Exception as err:
                 spinner.fail("💥 ")
@@ -573,6 +646,12 @@ def main() -> None:
             curr_project_details = (
                 f"Origin: {curr_project.origin}, Type: {curr_project.type}"
             )
+            if args.dry_run:
+                print(
+                    f"    [DRY-RUN] would reactivate: \u001b[1;32m{curr_project.name}\u001b[0m  "
+                    f"(\u001b[34m{curr_project_details}\u001b[0m)"
+                )
+                continue
             action = "Activating"
             spinner = yaspin(
                 text=f"{action}\033[1;32m {curr_project.name}", color="yellow"
@@ -582,7 +661,16 @@ def main() -> None:
             )
             spinner.start()
             try:
-                curr_project.activate()
+                if args.verbose:
+                    print(
+                        f"    [verbose] POST activate project id={curr_project.id} "
+                        f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                    )
+                ok = curr_project.activate()
+                if args.verbose:
+                    print(f"    [verbose] activate response ok={ok!r}")
+                if ok:
+                    total_projects_cycled += 1
                 spinner.ok("🆗 ")
             except Exception as err:
                 spinner.fail("💥 ")
@@ -597,6 +685,13 @@ def main() -> None:
             )
         )
 
+    if not args.dry_run and not input_orgs and total_projects_cycled == 0:
+        # All requested org names were matched, but no activate returned success (0 projects, or errors).
+        print(
+            "\n\u001b[1;33mNote\u001b[0m: no successful \u001b[1mactivate\u001b[0m in this run. If you "
+            "expected projects, re-check region (\u001b[1m--environment\u001b[0m), org slug/UUID, "
+            "and \u001b[1m--origins\u001b[0m; use \u001b[1m--verbose\u001b[0m to show API details.\n"
+        )
 
 if __name__ == "__main__":
     main()
