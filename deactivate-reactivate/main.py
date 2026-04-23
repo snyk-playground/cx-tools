@@ -5,7 +5,7 @@ import sys
 import time
 import urllib.parse
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 import requests
 import snyk
@@ -341,6 +341,21 @@ def _should_process_project(origin: str, allowed: Optional[Set[str]]) -> bool:
     return origin.casefold() in allowed
 
 
+def inactive_projects_in_org(
+    org: Any,
+    allowed_origins: Optional[Set[str]],
+) -> List[Any]:
+    """
+    Projects in the organization that match the origin filter and are inactive
+    (Snyk isMonitored is False: not monitored / deactivated in the UI).
+    """
+    return [
+        p
+        for p in org.projects.all()
+        if _should_process_project(p.origin, allowed_origins) and not p.isMonitored
+    ]
+
+
 def _org_matches_token(org: Any, token: str) -> bool:
     """True if token is this org's id (UUID) or slug (case-insensitive)."""
     t = token.strip()
@@ -390,7 +405,8 @@ def _resolve_urls(args: argparse.Namespace) -> Dict[str, str]:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Deactivate and reactivate Snyk projects to rebuild SCM webhooks. "
+            "Deactivate and reactivate Snyk projects to rebuild SCM webhooks, "
+            "or with --activate-inactive-only only activate projects that are already inactive. "
             "Optionally limit to projects with specific Snyk project origins "
             "(SCM / import source, e.g. github, gitlab)."
         )
@@ -460,6 +476,15 @@ def main() -> None:
         help=(
             "OAuth2 token endpoint (…/oauth2/token). Default is derived from the API URL. "
             "Also set via SNYK_OAUTH_TOKEN_URL."
+        ),
+    )
+    parser.add_argument(
+        "--activate-inactive-only",
+        action="store_true",
+        help=(
+            "Only activate projects that are currently inactive (not monitored). "
+            "Skips deactivate entirely; does not touch already-active projects. "
+            "Same origin filters as without this flag."
         ),
     )
     parser.add_argument(
@@ -554,11 +579,18 @@ def main() -> None:
         print()
 
     if not input_orgs:
-        prompt = (
-            "to preview which projects would be cycled (deactivate + reactivate)"
-            if args.dry_run
-            else "to reactivate projects to generate webhooks"
-        )
+        if args.activate_inactive_only:
+            prompt = (
+                "to preview which inactive projects would be activated"
+                if args.dry_run
+                else "to activate inactive (not monitored) projects only"
+            )
+        else:
+            prompt = (
+                "to preview which projects would be cycled (deactivate + reactivate)"
+                if args.dry_run
+                else "to reactivate projects to generate webhooks"
+            )
         print(f"Input the org slug(s) or org id(s) (UUID) for which you would like {prompt}.")
         input_orgs = input().split()
 
@@ -570,10 +602,18 @@ def main() -> None:
         for t in matched:
             input_orgs.remove(t)
         if args.dry_run:
+            if args.activate_inactive_only:
+                dry_intro = (
+                    "projects listed below are inactive (not monitored) and would be "
+                    "activated only (no deactivate)."
+                )
+            else:
+                dry_intro = (
+                    "projects listed below are what would be deactivated, then reactivated."
+                )
             print(
                 "\n\u001b[1;33m[DRY-RUN]\u001b[0m No API changes will be made for organization "
-                f'\033[1;32m"{curr_org.name}"\u001b[0m (projects listed below are what '
-                "would be deactivated, then reactivated).\n"
+                f'\033[1;32m"{curr_org.name}"\u001b[0m ({dry_intro})\n'
             )
         else:
             print(
@@ -582,73 +622,103 @@ def main() -> None:
                 + "\u001b[0morganization"
             )
 
-        projects = [
-            p
-            for p in curr_org.projects.all()
-            if _should_process_project(p.origin, allowed_origins)
-        ]
+        if args.activate_inactive_only:
+            projects = inactive_projects_in_org(curr_org, allowed_origins)
+        else:
+            projects = [
+                p
+                for p in curr_org.projects.all()
+                if _should_process_project(p.origin, allowed_origins)
+            ]
 
         if args.verbose:
+            filt = (
+                "inactive + origin filters"
+                if args.activate_inactive_only
+                else "origin filter"
+            )
             print(
                 f"[verbose] matched org: id={curr_org.id} slug={curr_org.slug!r} "
-                f'name="{curr_org.name}" — {len(projects)} project(s) after origin filter\n'
+                f'name="{curr_org.name}" — {len(projects)} project(s) after {filt}\n'
             )
 
         if not args.dry_run and not projects:
+            if args.activate_inactive_only:
+                warn_detail = (
+                    "No inactive (not monitored) projects matched the origin filter (if any). "
+                    "No activate was called"
+                )
+            else:
+                warn_detail = (
+                    "No projects to process in this org after applying the origin filter (if any). "
+                    "No deactivate/activate was called"
+                )
             print(
-                "\n\u001b[1;33mWARNING\u001b[0m: No projects to process in this org after "
-                "applying the origin filter (if any). No deactivate/activate was called for "
+                f"\n\u001b[1;33mWARNING\u001b[0m: {warn_detail} for "
                 f"organization \"{curr_org.name}\" (id {curr_org.id}). "
                 "If that is unexpected, check \u001b[1m--origins\u001b[0m, "
                 "\u001b[1m--environment\u001b[0m (region), and that the org has imported projects.\n"
             )
         if args.dry_run and projects:
-            print(
-                f"  \u001b[90m{len(projects)} project(s) would be cycled in this org."
-                + "\u001b[0m"
-            )
-        elif args.dry_run:
-            print("  \u001b[90mNo projects match the origin filter (if any) in this org.\u001b[0m")
-
-        for curr_project in projects:
-            curr_project_details = (
-                f"Origin: {curr_project.origin}, Type: {curr_project.type}"
-            )
-            if args.dry_run:
-                print(
-                    f"    [DRY-RUN] would deactivate: \u001b[1;33m{curr_project.name}\u001b[0m  "
-                    f"(\u001b[34m{curr_project_details}\u001b[0m)"
+            if args.activate_inactive_only:
+                summary = (
+                    f"{len(projects)} inactive project(s) would be activated in this org."
                 )
-                continue
-            action = "Deactivating"
-            spinner = yaspin(
-                text=f"{action}\033[1;33m {curr_project.name}", color="yellow"
-            )
-            spinner.write(
-                f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
-            )
-            spinner.start()
-            try:
-                if args.verbose:
+            else:
+                summary = f"{len(projects)} project(s) would be cycled in this org."
+            print(f"  \u001b[90m{summary}\u001b[0m")
+        elif args.dry_run:
+            if args.activate_inactive_only:
+                msg = "No inactive projects match the origin filter (if any) in this org."
+            else:
+                msg = "No projects match the origin filter (if any) in this org."
+            print(f"  \u001b[90m{msg}\u001b[0m")
+
+        if not args.activate_inactive_only:
+            for curr_project in projects:
+                curr_project_details = (
+                    f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                )
+                if args.dry_run:
                     print(
-                        f"    [verbose] POST deactivate project id={curr_project.id} "
-                        f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                        f"    [DRY-RUN] would deactivate: \u001b[1;33m{curr_project.name}\u001b[0m  "
+                        f"(\u001b[34m{curr_project_details}\u001b[0m)"
                     )
-                ok = curr_project.deactivate()
-                if args.verbose:
-                    print(f"    [verbose] deactivate response ok={ok!r}")
-                spinner.ok("🆗 ")
-            except Exception as err:
-                spinner.fail("💥 ")
-                spinner.write(f"\u001b[31m    {err}\u001b[0m")
+                    continue
+                action = "Deactivating"
+                spinner = yaspin(
+                    text=f"{action}\033[1;33m {curr_project.name}", color="yellow"
+                )
+                spinner.write(
+                    f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
+                )
+                spinner.start()
+                try:
+                    if args.verbose:
+                        print(
+                            f"    [verbose] POST deactivate project id={curr_project.id} "
+                            f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                        )
+                    ok = curr_project.deactivate()
+                    if args.verbose:
+                        print(f"    [verbose] deactivate response ok={ok!r}")
+                    spinner.ok("🆗 ")
+                except Exception as err:
+                    spinner.fail("💥 ")
+                    spinner.write(f"\u001b[31m    {err}\u001b[0m")
 
         for curr_project in projects:
             curr_project_details = (
                 f"Origin: {curr_project.origin}, Type: {curr_project.type}"
             )
             if args.dry_run:
+                label = (
+                    "would activate (inactive)"
+                    if args.activate_inactive_only
+                    else "would reactivate"
+                )
                 print(
-                    f"    [DRY-RUN] would reactivate: \u001b[1;32m{curr_project.name}\u001b[0m  "
+                    f"    [DRY-RUN] {label}: \u001b[1;32m{curr_project.name}\u001b[0m  "
                     f"(\u001b[34m{curr_project_details}\u001b[0m)"
                 )
                 continue

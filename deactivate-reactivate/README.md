@@ -2,6 +2,8 @@
 
 The purpose of this script is to run through Snyk organizations, deactivate every selected project, then activate it again. That cycle helps rebuild webhooks for SCM integrations.
 
+Alternatively, **`--activate-inactive-only`** skips deactivate and **only calls activate** on projects that are already inactive (not monitored) in Snyk—see **Activating only inactive projects** below.
+
 The script uses the Snyk API with **retry behavior for rate limits**: HTTP **429** responses are retried using the **`Retry-After`** header (seconds or HTTP-date), and transient **5xx** responses use exponential backoff via the `pysnyk` client.
 
 # Requirements
@@ -129,6 +131,24 @@ python3 main.py --orgs my-org --origin gitlab
 
 Common `origin` values include `github`, `github-enterprise`, `gitlab`, `bitbucket-cloud`, and `azure-repos` (exact strings depend on how projects were imported in Snyk).
 
+## Activating only inactive projects (`--activate-inactive-only`)
+
+By default the script **deactivates then reactivates** every matching project. With **`--activate-inactive-only`**, it **never** deactivates: it only lists and activates projects whose Snyk API field **`isMonitored`** is **false** (inactive / not monitored in the UI). Already-active projects are left unchanged.
+
+The same **`--origin` / `--origins`** filters apply: only inactive projects whose origin passes the filter are activated.
+
+Examples:
+
+```bash
+# Preview which inactive projects would be activated
+python3 main.py --orgs my-org --activate-inactive-only --dry-run
+
+# Activate only inactive GitHub projects
+python3 main.py --orgs my-org --activate-inactive-only --origin github
+```
+
+In `main.py`, inactive projects for an org are resolved by the helper **`inactive_projects_in_org`** (origin filter + `not project.isMonitored`).
+
 ## Rate limit retries (`--rate-limit-attempts`)
 
 - **`--rate-limit-attempts N`** — maximum number of **consecutive HTTP 429** responses to retry **per API request** before failing (default: **8**). Waits honor `Retry-After` when present.
@@ -141,7 +161,7 @@ python3 main.py --orgs my-org --rate-limit-attempts 12
 
 ## Dry run (`--dry-run`) and verbose (`-v` / `--verbose`)
 
-- **`--dry-run`** — Lists orgs and projects that would be cycled; does **not** call deactivate or activate. Use to confirm the org, region, and (if any) origin filter before a real run.
+- **`--dry-run`** — Lists orgs and projects that would be changed; does **not** call deactivate or activate. Without **`--activate-inactive-only`**, that means the full deactivate-then-reactivate cycle. With **`--activate-inactive-only`**, only inactive projects that would be activated are listed. Use to confirm the org, region, and (if any) origin filter before a real run.
 - **`-v` / `--verbose`** — Prints the resolved **environment and API base URLs**, every org the token can see (id and slug), and for each project the **project id**, **monitored** flag, and each API **ok** result. Use when a run “succeeds” but you are unsure anything happened, or the Snyk UI is confusing.
 
 **If the script exits cleanly but the UI “doesn’t change”:** a full cycle **deactivates and then reactivates** every selected project, so the **normal end state** is still **active** / monitored in the UI—only the **webhooks / integration** are refreshed, which may not look like a visible status flip. If you see a **warning** that no projects were processed, check **region** (`--environment`), **org** slug or UUID, and **`--origins`** (try omitting the origin filter once). If the script prints that some org names were not found, the token or region may not match that org.
