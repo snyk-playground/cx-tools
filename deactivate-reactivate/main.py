@@ -1,11 +1,13 @@
 import argparse
+import concurrent.futures
 import email.utils
 import os
 import sys
+import threading
 import time
 import urllib.parse
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import requests
 import snyk
@@ -341,12 +343,176 @@ def _should_process_project(origin: str, allowed: Optional[Set[str]]) -> bool:
     return origin.casefold() in allowed
 
 
+def inactive_projects_in_org(
+    org: Any,
+    allowed_origins: Optional[Set[str]],
+) -> List[Any]:
+    """
+    Projects in the organization that match the origin filter and are inactive
+    (Snyk isMonitored is False: not monitored / deactivated in the UI).
+    """
+    return [
+        p
+        for p in org.projects.all()
+        if _should_process_project(p.origin, allowed_origins) and not p.isMonitored
+    ]
+
+
 def _org_matches_token(org: Any, token: str) -> bool:
     """True if token is this org's id (UUID) or slug (case-insensitive)."""
     t = token.strip()
     if org.id == t:
         return True
     return org.slug.casefold() == t.casefold()
+
+
+def _create_snyk_client(
+    args: argparse.Namespace,
+    urls: Dict[str, str],
+    *,
+    interactive_token: Optional[str] = None,
+) -> Any:
+    """
+    Build a Snyk client from CLI args, resolved URLs, and environment.
+    ``interactive_token`` is only used when no OAuth/API env credentials are set.
+    """
+    env_name = urls["environment"]
+    client_kw = {
+        "url": urls["api_url"],
+        "rest_api_url": urls["rest_api_url"],
+        "rate_limit_max_attempts": args.rate_limit_attempts,
+    }
+    oauth_client_id = os.environ.get("SNYK_OAUTH_CLIENT_ID")
+    oauth_client_secret = os.environ.get("SNYK_OAUTH_CLIENT_SECRET")
+    oauth_access = os.environ.get("SNYK_OAUTH_TOKEN")
+    api_key = os.environ.get("SNYK_TOKEN")
+
+    if oauth_client_id and oauth_client_secret:
+        return OAuthRateLimitAwareSnykClient(
+            "",
+            use_bearer=True,
+            oauth_client_id=oauth_client_id,
+            oauth_client_secret=oauth_client_secret,
+            oauth_token_url=urls["oauth_token_url"],
+            **client_kw,
+        )
+    if oauth_access:
+        return OAuthRateLimitAwareSnykClient(
+            oauth_access,
+            use_bearer=True,
+            **client_kw,
+        )
+    if api_key:
+        if env_name == "SNYK-GOV-01":
+            print(
+                "Snyk for Government (FedRAMP) does not support static API tokens; "
+                "use OAuth2 service account credentials (SNYK_OAUTH_CLIENT_ID and "
+                "SNYK_OAUTH_CLIENT_SECRET) or a short-lived SNYK_OAUTH_TOKEN.",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
+        return RateLimitAwareSnykClient(api_key, **client_kw)
+    if env_name == "SNYK-GOV-01":
+        raise SystemExit(
+            "FedRAMP / Snyk for Government requires OAuth2. Set "
+            "SNYK_OAUTH_CLIENT_ID and SNYK_OAUTH_CLIENT_SECRET (recommended), or "
+            "SNYK_OAUTH_TOKEN for a short-lived access token. "
+            "Static SNYK_TOKEN is not allowed."
+        )
+    if interactive_token is None:
+        raise SystemExit(
+            "No Snyk credentials in environment (SNYK_TOKEN or OAuth variables)."
+        )
+    return RateLimitAwareSnykClient(interactive_token.strip(), **client_kw)
+
+
+def _post_project_state_change(
+    client: Any, org_id: str, project_id: str, verb: str
+) -> bool:
+    """POST deactivate or activate (matches pysnyk Project.activate/deactivate paths)."""
+    path = f"org/{org_id}/project/{project_id}/{verb}"
+    return bool(client.post(path, {}))
+
+
+class _ThreadLocalClientHolder:
+    """One Snyk client per worker thread (OAuth refresh and requests are not shared)."""
+
+    def __init__(self, args: argparse.Namespace, urls: Dict[str, str]) -> None:
+        self._args = args
+        self._urls = urls
+        self._local = threading.local()
+
+    def get(self) -> Any:
+        client = getattr(self._local, "client", None)
+        if client is None:
+            self._local.client = _create_snyk_client(self._args, self._urls)
+        return self._local.client
+
+
+def _project_work_row(p: Any) -> Tuple[str, str, str, str, str, bool]:
+    return (
+        p.organization.id,
+        p.id,
+        p.name,
+        p.origin,
+        p.type,
+        p.isMonitored,
+    )
+
+
+def _run_parallel_project_posts(
+    holder: _ThreadLocalClientHolder,
+    rows: List[Tuple[str, str, str, str, str, bool]],
+    verb: str,
+    *,
+    workers: int,
+    verbose: bool,
+    log_lock: threading.Lock,
+    count_truthy_ok: bool,
+) -> Tuple[int, List[str]]:
+    """
+    Run deactivate or activate for many projects in parallel.
+    Returns (success_count, error_messages).
+
+    When ``count_truthy_ok`` is True (activate), increments success for truthy POST results,
+    matching ``if ok: total_projects_cycled += 1`` in the sequential path.
+    When False (deactivate), any completed POST without an exception counts as success
+    (the sequential path does not treat a falsy body as failure).
+    """
+    successes = 0
+    errors: List[str] = []
+
+    def _one(row: Tuple[str, str, str, str, str, bool]) -> Tuple[bool, Optional[str]]:
+        org_id, project_id, name, origin, typ, is_monitored = row
+        try:
+            c = holder.get()
+            if verbose:
+                with log_lock:
+                    print(
+                        f"    [verbose] POST {verb} project id={project_id} "
+                        f"isMonitored={is_monitored!r} origin={origin!r}"
+                    )
+            ok = _post_project_state_change(c, org_id, project_id, verb)
+            if verbose:
+                with log_lock:
+                    print(f"    [verbose] {verb} response ok={ok!r}")
+            if count_truthy_ok:
+                return ok, None
+            return True, None
+        except Exception as err:
+            return False, f"{name} ({verb}): {err}"
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_one, row) for row in rows]
+        for fut in concurrent.futures.as_completed(futures):
+            ok, err = fut.result()
+            if err:
+                with log_lock:
+                    print(f"\u001b[31m    {err}\u001b[0m")
+                errors.append(err)
+            elif ok:
+                successes += 1
+    return successes, errors
 
 
 def _resolve_urls(args: argparse.Namespace) -> Dict[str, str]:
@@ -390,9 +556,10 @@ def _resolve_urls(args: argparse.Namespace) -> Dict[str, str]:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Deactivate and reactivate Snyk projects to rebuild SCM webhooks. "
+            "Deactivate and reactivate Snyk projects to rebuild SCM webhooks, "
+            "or with --activate-inactive-only only activate projects that are already inactive. "
             "Optionally limit to projects with specific Snyk project origins "
-            "(SCM / import source, e.g. github, gitlab)."
+            "(SCM / import source, e.g. github, github-cloud-app, gitlab)."
         )
     )
     parser.add_argument(
@@ -411,8 +578,10 @@ def main() -> None:
         metavar="ORIGIN",
         help=(
             "Only process projects with this Snyk project origin (repeat for "
-            "several). Examples: github, github-enterprise, gitlab, "
-            "bitbucket-cloud, azure-repos. Omit to include all origins."
+            "several). Examples: github, github-cloud-app (GitHub App imports), "
+            "github-enterprise, gitlab, bitbucket-cloud, azure-repos. "
+            "Use the exact string the API returns (see dry-run). "
+            "Omit to include all origins."
         ),
     )
     parser.add_argument(
@@ -462,7 +631,51 @@ def main() -> None:
             "Also set via SNYK_OAUTH_TOKEN_URL."
         ),
     )
+    parser.add_argument(
+        "--activate-inactive-only",
+        action="store_true",
+        help=(
+            "Only activate projects that are currently inactive (not monitored). "
+            "Skips deactivate entirely; does not touch already-active projects. "
+            "Same origin filters as without this flag."
+        ),
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "List organizations and projects that would be cycled; do not call "
+            "deactivate or activate. Still requires valid credentials to list data."
+        ),
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help=(
+            "Print environment/API endpoints, which organizations the token can see, "
+            "and per-project API details (id, monitored flag, result). Use when results "
+            "in the Snyk UI are unclear or something seems skipped."
+        ),
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        metavar="N",
+        help=(
+            "Parallel HTTP workers for deactivate/activate (default: 1, fully sequential). "
+            "Try 8–16 for large orgs; higher values increase throughput but may trigger "
+            "more HTTP 429 responses (retries still apply). When N>1, credentials must come "
+            "from the environment (SNYK_TOKEN or OAuth variables), not an interactive prompt."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.workers < 1:
+        raise SystemExit("--workers must be >= 1")
+    if args.workers > 64:
+        raise SystemExit("--workers cannot exceed 64")
 
     allowed_origins = _parse_allowed_origins(args)
     input_orgs = list(args.orgs) if args.orgs else []
@@ -470,53 +683,25 @@ def main() -> None:
     urls = _resolve_urls(args)
     env_name = urls["environment"]
 
-    client_kw = {
-        "url": urls["api_url"],
-        "rest_api_url": urls["rest_api_url"],
-        "rate_limit_max_attempts": args.rate_limit_attempts,
-    }
-
     oauth_client_id = os.environ.get("SNYK_OAUTH_CLIENT_ID")
     oauth_client_secret = os.environ.get("SNYK_OAUTH_CLIENT_SECRET")
     oauth_access = os.environ.get("SNYK_OAUTH_TOKEN")
     api_key = os.environ.get("SNYK_TOKEN")
+    has_env_creds = bool(
+        (oauth_client_id and oauth_client_secret) or oauth_access or api_key
+    )
+    if args.workers > 1 and not has_env_creds:
+        raise SystemExit(
+            "--workers > 1 requires SNYK_TOKEN or OAuth credentials in the environment; "
+            "interactive API token entry is not supported with parallel workers."
+        )
 
-    if oauth_client_id and oauth_client_secret:
-        client = OAuthRateLimitAwareSnykClient(
-            "",
-            use_bearer=True,
-            oauth_client_id=oauth_client_id,
-            oauth_client_secret=oauth_client_secret,
-            oauth_token_url=urls["oauth_token_url"],
-            **client_kw,
-        )
-    elif oauth_access:
-        client = OAuthRateLimitAwareSnykClient(
-            oauth_access,
-            use_bearer=True,
-            **client_kw,
-        )
-    elif api_key:
-        if env_name == "SNYK-GOV-01":
-            print(
-                "Snyk for Government (FedRAMP) does not support static API tokens; "
-                "use OAuth2 service account credentials (SNYK_OAUTH_CLIENT_ID and "
-                "SNYK_OAUTH_CLIENT_SECRET) or a short-lived SNYK_OAUTH_TOKEN.",
-                file=sys.stderr,
-            )
-            raise SystemExit(1)
-        client = RateLimitAwareSnykClient(api_key, **client_kw)
-    else:
-        if env_name == "SNYK-GOV-01":
-            raise SystemExit(
-                "FedRAMP / Snyk for Government requires OAuth2. Set "
-                "SNYK_OAUTH_CLIENT_ID and SNYK_OAUTH_CLIENT_SECRET (recommended), or "
-                "SNYK_OAUTH_TOKEN for a short-lived access token. "
-                "Static SNYK_TOKEN is not allowed."
-            )
+    interactive_token: Optional[str] = None
+    if not has_env_creds:
         print("Enter your Snyk API Token")
-        snyk_token = input()
-        client = RateLimitAwareSnykClient(snyk_token, **client_kw)
+        interactive_token = input()
+
+    client = _create_snyk_client(args, urls, interactive_token=interactive_token)
 
     user_orgs = []
     try:
@@ -525,68 +710,228 @@ def main() -> None:
         print(f"💥 {TOKEN_ERROR_HINT}")
         raise SystemExit(1)
 
-    if not input_orgs:
+    if args.verbose:
         print(
-            "Input the org slug(s) or org id(s) (UUID) for which you would like "
-            "to reactivate projects to generate webhooks."
+            f"\n[verbose] environment={env_name!r} api_v1={urls['api_url']!r} "
+            f"rest={urls['rest_api_url']!r} oauth={urls['oauth_token_url']!r}\n"
+            f"[verbose] this token can see {len(user_orgs)} organization(s):"
         )
+        for o in user_orgs:
+            print(f"  - id={o.id} slug={o.slug!r} name={o.name!r}")
+        print()
+
+    if not input_orgs:
+        if args.activate_inactive_only:
+            prompt = (
+                "to preview which inactive projects would be activated"
+                if args.dry_run
+                else "to activate inactive (not monitored) projects only"
+            )
+        else:
+            prompt = (
+                "to preview which projects would be cycled (deactivate + reactivate)"
+                if args.dry_run
+                else "to reactivate projects to generate webhooks"
+            )
+        print(f"Input the org slug(s) or org id(s) (UUID) for which you would like {prompt}.")
         input_orgs = input().split()
 
+    total_projects_cycled = 0
     for curr_org in user_orgs:
         matched = [t for t in input_orgs if _org_matches_token(curr_org, t)]
         if not matched:
             continue
         for t in matched:
             input_orgs.remove(t)
-        print(
-            "Processing"
-            + """ \033[1;32m"{}" """.format(curr_org.name)
-            + "\u001b[0morganization"
-        )
+        if args.dry_run:
+            if args.activate_inactive_only:
+                dry_intro = (
+                    "projects listed below are inactive (not monitored) and would be "
+                    "activated only (no deactivate)."
+                )
+            else:
+                dry_intro = (
+                    "projects listed below are what would be deactivated, then reactivated."
+                )
+            print(
+                "\n\u001b[1;33m[DRY-RUN]\u001b[0m No API changes will be made for organization "
+                f'\033[1;32m"{curr_org.name}"\u001b[0m ({dry_intro})\n'
+            )
+        else:
+            print(
+                "Processing"
+                + """ \033[1;32m"{}" """.format(curr_org.name)
+                + "\u001b[0morganization"
+            )
 
-        projects = [
-            p
-            for p in curr_org.projects.all()
-            if _should_process_project(p.origin, allowed_origins)
-        ]
+        if args.activate_inactive_only:
+            projects = inactive_projects_in_org(curr_org, allowed_origins)
+        else:
+            projects = [
+                p
+                for p in curr_org.projects.all()
+                if _should_process_project(p.origin, allowed_origins)
+            ]
 
-        for curr_project in projects:
-            curr_project_details = (
-                f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+        if args.verbose:
+            filt = (
+                "inactive + origin filters"
+                if args.activate_inactive_only
+                else "origin filter"
             )
-            action = "Deactivating"
-            spinner = yaspin(
-                text=f"{action}\033[1;33m {curr_project.name}", color="yellow"
+            print(
+                f"[verbose] matched org: id={curr_org.id} slug={curr_org.slug!r} "
+                f'name="{curr_org.name}" — {len(projects)} project(s) after {filt}\n'
             )
-            spinner.write(
-                f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
-            )
-            spinner.start()
-            try:
-                curr_project.deactivate()
-                spinner.ok("🆗 ")
-            except Exception as err:
-                spinner.fail("💥 ")
-                spinner.write(f"\u001b[31m    {err}\u001b[0m")
 
-        for curr_project in projects:
-            curr_project_details = (
-                f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+        if not args.dry_run and not projects:
+            if args.activate_inactive_only:
+                warn_detail = (
+                    "No inactive (not monitored) projects matched the origin filter (if any). "
+                    "No activate was called"
+                )
+            else:
+                warn_detail = (
+                    "No projects to process in this org after applying the origin filter (if any). "
+                    "No deactivate/activate was called"
+                )
+            print(
+                f"\n\u001b[1;33mWARNING\u001b[0m: {warn_detail} for "
+                f"organization \"{curr_org.name}\" (id {curr_org.id}). "
+                "If that is unexpected, check \u001b[1m--origins\u001b[0m, "
+                "\u001b[1m--environment\u001b[0m (region), and that the org has imported projects.\n"
             )
-            action = "Activating"
-            spinner = yaspin(
-                text=f"{action}\033[1;32m {curr_project.name}", color="yellow"
+        if args.dry_run and projects:
+            if args.activate_inactive_only:
+                summary = (
+                    f"{len(projects)} inactive project(s) would be activated in this org."
+                )
+            else:
+                summary = f"{len(projects)} project(s) would be cycled in this org."
+            print(f"  \u001b[90m{summary}\u001b[0m")
+        elif args.dry_run:
+            if args.activate_inactive_only:
+                msg = "No inactive projects match the origin filter (if any) in this org."
+            else:
+                msg = "No projects match the origin filter (if any) in this org."
+            print(f"  \u001b[90m{msg}\u001b[0m")
+
+        log_lock = threading.Lock()
+        parallel_holder: Optional[_ThreadLocalClientHolder] = None
+        if not args.dry_run and args.workers > 1 and projects:
+            parallel_holder = _ThreadLocalClientHolder(args, urls)
+            mode_hint = (
+                "activate only"
+                if args.activate_inactive_only
+                else "deactivate and activate"
             )
-            spinner.write(
-                f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
+            print(
+                f"    Using \033[1;33m{args.workers}\u001b[0m concurrent worker(s) for "
+                f"{mode_hint} ({len(projects)} project(s))."
             )
-            spinner.start()
-            try:
-                curr_project.activate()
-                spinner.ok("🆗 ")
-            except Exception as err:
-                spinner.fail("💥 ")
-                spinner.write(f"\u001b[31m    {err}\u001b[0m")
+
+        if not args.activate_inactive_only:
+            if args.dry_run:
+                for curr_project in projects:
+                    curr_project_details = (
+                        f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                    )
+                    print(
+                        f"    [DRY-RUN] would deactivate: \u001b[1;33m{curr_project.name}\u001b[0m  "
+                        f"(\u001b[34m{curr_project_details}\u001b[0m)"
+                    )
+            elif args.workers > 1 and parallel_holder is not None:
+                rows = [_project_work_row(p) for p in projects]
+                _run_parallel_project_posts(
+                    parallel_holder,
+                    rows,
+                    "deactivate",
+                    workers=args.workers,
+                    verbose=args.verbose,
+                    log_lock=log_lock,
+                    count_truthy_ok=False,
+                )
+            else:
+                for curr_project in projects:
+                    curr_project_details = (
+                        f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                    )
+                    action = "Deactivating"
+                    spinner = yaspin(
+                        text=f"{action}\033[1;33m {curr_project.name}", color="yellow"
+                    )
+                    spinner.write(
+                        f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
+                    )
+                    spinner.start()
+                    try:
+                        if args.verbose:
+                            print(
+                                f"    [verbose] POST deactivate project id={curr_project.id} "
+                                f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                            )
+                        ok = curr_project.deactivate()
+                        if args.verbose:
+                            print(f"    [verbose] deactivate response ok={ok!r}")
+                        spinner.ok("🆗 ")
+                    except Exception as err:
+                        spinner.fail("💥 ")
+                        spinner.write(f"\u001b[31m    {err}\u001b[0m")
+
+        if args.dry_run:
+            for curr_project in projects:
+                curr_project_details = (
+                    f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                )
+                label = (
+                    "would activate (inactive)"
+                    if args.activate_inactive_only
+                    else "would reactivate"
+                )
+                print(
+                    f"    [DRY-RUN] {label}: \u001b[1;32m{curr_project.name}\u001b[0m  "
+                    f"(\u001b[34m{curr_project_details}\u001b[0m)"
+                )
+        elif args.workers > 1 and parallel_holder is not None:
+            rows = [_project_work_row(p) for p in projects]
+            n_ok, _ = _run_parallel_project_posts(
+                parallel_holder,
+                rows,
+                "activate",
+                workers=args.workers,
+                verbose=args.verbose,
+                log_lock=log_lock,
+                count_truthy_ok=True,
+            )
+            total_projects_cycled += n_ok
+        else:
+            for curr_project in projects:
+                curr_project_details = (
+                    f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                )
+                action = "Activating"
+                spinner = yaspin(
+                    text=f"{action}\033[1;32m {curr_project.name}", color="yellow"
+                )
+                spinner.write(
+                    f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
+                )
+                spinner.start()
+                try:
+                    if args.verbose:
+                        print(
+                            f"    [verbose] POST activate project id={curr_project.id} "
+                            f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                        )
+                    ok = curr_project.activate()
+                    if args.verbose:
+                        print(f"    [verbose] activate response ok={ok!r}")
+                    if ok:
+                        total_projects_cycled += 1
+                    spinner.ok("🆗 ")
+                except Exception as err:
+                    spinner.fail("💥 ")
+                    spinner.write(f"\u001b[31m    {err}\u001b[0m")
 
     if input_orgs:
         print(
@@ -597,6 +942,13 @@ def main() -> None:
             )
         )
 
+    if not args.dry_run and not input_orgs and total_projects_cycled == 0:
+        # All requested org names were matched, but no activate returned success (0 projects, or errors).
+        print(
+            "\n\u001b[1;33mNote\u001b[0m: no successful \u001b[1mactivate\u001b[0m in this run. If you "
+            "expected projects, re-check region (\u001b[1m--environment\u001b[0m), org slug/UUID, "
+            "and \u001b[1m--origins\u001b[0m; use \u001b[1m--verbose\u001b[0m to show API details.\n"
+        )
 
 if __name__ == "__main__":
     main()

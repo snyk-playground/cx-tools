@@ -1,3 +1,7 @@
 pysnyk==0.9.19
 yaspin==3.0.2
 urllib3==2.6.3
+requests>=2.28.0
+# requests imports chardet first if present; chardet 6.x fails requests' version check
+chardet>=3.0.2,<6.0.0
+charset-normalizer>=2.0.0,<4.0.0
