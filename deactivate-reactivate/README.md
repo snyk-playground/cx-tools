@@ -1,47 +1,203 @@
 # deactivate-reactivate-all-projects
 
-The purpose of this script is to run through Snyk organizations, deactivate every selected project, then activate it again. That cycle helps rebuild webhooks for SCM integrations.
+Cycle Snyk projects **deactivate → activate** so SCM **webhooks** can be rebuilt. You pick one or more organizations; the script walks the projects you care about and calls the Snyk API for each.
 
-Alternatively, **`--activate-inactive-only`** skips deactivate and **only calls activate** on projects that are already inactive (not monitored) in Snyk—see **Activating only inactive projects** below.
+**Optional:** **`--activate-inactive-only`** skips deactivate and only **activates** projects that are already inactive (not monitored)—useful when you only want to turn monitoring back on.
 
-The script uses the Snyk API with **retry behavior for rate limits**: HTTP **429** responses are retried using the **`Retry-After`** header (seconds or HTTP-date), and transient **5xx** responses use exponential backoff via the `pysnyk` client.
+**Reliability:** HTTP **429** (rate limit) responses are retried using **`Retry-After`**; transient **5xx** errors use backoff from the underlying `pysnyk` client.
 
-# Requirements
+---
 
-- Python 3.9+ recommended
-- Dependencies in `requirements.txt` (`pysnyk`, `yaspin`, and their transitive packages)
+## Quick start (most customers)
 
-# Usage
-
-1. Clone this repository locally.
-
-2. **Authenticate.** The script picks credentials in this order (first match wins):
-
-   | Priority | Variables | Notes |
-   | --- | --- | --- |
-   | 1 | `SNYK_OAUTH_CLIENT_ID` and `SNYK_OAUTH_CLIENT_SECRET` | OAuth 2.0 **client credentials** (recommended for automation). Short-lived access tokens are obtained from the OAuth token endpoint and refreshed automatically before expiry. |
-   | 2 | `SNYK_OAUTH_TOKEN` | A short-lived OAuth **access token** (same usage as the Snyk CLI). You must refresh it yourself when it expires; use client credentials instead if you need long runs. |
-   | 3 | `SNYK_TOKEN` | Classic API token (`Authorization: token …`). **Not available in Snyk for Government (FedRAMP)**; see below. |
-
-   If none of these are set and you are **not** targeting Gov, the script prompts for `SNYK_TOKEN` interactively.
-
-3. Install dependencies:
+1. **Clone** this repo and install:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Set the API region** if your Snyk organization is not on the default instance. Use `SNYK_ENVIRONMENT` and/or `--environment` so API v1, REST, and the OAuth token endpoint all match your tenant (see the **Region / environment** section below). If you use `snyk config environment` for the CLI, use the same value here.
+2. **Set a token** (same idea as the Snyk CLI—use a token that can manage the target orgs):
 
-5. Run `main.py` with the options below.
+   ```bash
+   export SNYK_TOKEN="your-snyk-api-token"
+   ```
 
-## Snyk for Government (FedRAMP / `SNYK-GOV-01`)
+3. **Preview**, then run:
 
-[Snyk for Government (US)](https://docs.snyk.io/snyk-data-and-governance/snyk-for-government-us) does **not** allow static API tokens. You must use **OAuth 2.0**—typically a service account with the **client credentials** grant. Access tokens are used like API keys but with `Authorization: Bearer` semantics and a short TTL; this script refreshes them when you use `SNYK_OAUTH_CLIENT_ID` / `SNYK_OAUTH_CLIENT_SECRET`.
+   ```bash
+   # See what would change (no API writes)
+   python3 main.py --orgs your-org-slug --dry-run
 
-1. Create an OAuth 2.0 service account (UI or API) and store **client ID** and **client secret** securely.
-2. Point the script at the Gov API endpoints using **`--environment SNYK-GOV-01`** (or `export SNYK_ENVIRONMENT=SNYK-GOV-01`). That selects `https://api.snykgov.io` for API v1, REST, and `/oauth2/token`, consistent with [regional URL documentation](https://docs.snyk.io/snyk-data-and-governance/regional-hosting-and-data-residency).
-3. Export credentials and run:
+   # Then run for real
+   python3 main.py --orgs your-org-slug
+   ```
+
+If your Snyk data is **not** on the default US instance, set region first (see **Region** below)—wrong region usually means “wrong orgs or empty project list.”
+
+**Large orgs (many thousands of projects):** add **`--workers 12`** (or 8–16) so deactivate/activate calls run in parallel. Requires `SNYK_TOKEN` (or OAuth env vars) in the environment—not an interactive prompt.
+
+---
+
+## What to pass (cheat sheet)
+
+| You want to… | Use |
+| --- | --- |
+| Pick org(s) | **`--orgs slug-or-uuid`** (repeat or space-separate multiple). Omit to be prompted. |
+| Preview only | **`--dry-run`** |
+| Speed up huge runs | **`--workers N`** (try **8–16**; max **64**) |
+| Limit to GitHub / GitLab / etc. | **`--origin github`** (repeat) or **`--origins github gitlab`** |
+| Only turn on inactive projects | **`--activate-inactive-only`** |
+| EU / AU / second US shard | **`--environment SNYK-EU-01`** (etc.) or **`export SNYK_ENVIRONMENT=...`** |
+| More 429 retries per request | **`--rate-limit-attempts 12`** (default **8**) |
+| Debug API / org visibility | **`-v`** / **`--verbose`** |
+
+Use **`--dry-run`** until the org names, region, and optional origin filter look right.
+
+---
+
+## Authentication
+
+The script uses the **first** of these that is set:
+
+| Order | Environment variables | When to use |
+| --- | --- | --- |
+| 1 | **`SNYK_OAUTH_CLIENT_ID`** + **`SNYK_OAUTH_CLIENT_SECRET`** | Automation / long runs; tokens refresh automatically. |
+| 2 | **`SNYK_OAUTH_TOKEN`** | Short-lived access token (you refresh it yourself). |
+| 3 | **`SNYK_TOKEN`** | Classic Snyk API token. |
+
+If nothing is set and you are **not** on Snyk for Government, the script may **prompt** for `SNYK_TOKEN`. **Parallel mode** (`--workers` > 1) **always** needs credentials in the environment (no prompt).
+
+**Snyk for Government (FedRAMP):** static **`SNYK_TOKEN` is not supported**—use OAuth client credentials and **`--environment SNYK-GOV-01`**. Short instructions: **[Snyk for Government](#optional-snyk-for-government-fedramp)** at the end of this file.
+
+---
+
+## Region / environment
+
+Snyk is hosted in [regions](https://docs.snyk.io/snyk-data-and-governance/regional-hosting-and-data-residency). The script must match **your** org’s region or listing will look wrong.
+
+- **Default:** **`SNYK-US-01`** if you set nothing (same idea as `snyk config environment`).
+- **Set once:** `export SNYK_ENVIRONMENT=SNYK-EU-01` **or** `python3 main.py --environment SNYK-EU-01 --orgs my-org`.
+
+| `SNYK_ENVIRONMENT` / `--environment` | Typical use |
+| --- | --- |
+| `SNYK-US-01` | Default US |
+| `SNYK-US-02` | US (`api.us.snyk.io`) |
+| `SNYK-EU-01` | Europe |
+| `SNYK-AU-01` | Australia |
+| `SNYK-GOV-01` | US Government / FedRAMP (OAuth only—see appendix) |
+
+**Advanced:** Override URLs with **`--api-url`**, **`--rest-api-url`**, **`--oauth-token-url`** or **`SNYK_API_URL`**, **`SNYK_REST_API_URL`**, **`SNYK_OAUTH_TOKEN_URL`**. URLs must be **HTTPS**; by default hostnames must be under **`*.snyk.io`** or **`*.snykgov.io`**. Other hosts: set **`SNYK_ALLOW_UNVERIFIED_API_URL=1`** (HTTPS still required).
+
+---
+
+## Organizations (`--orgs`)
+
+Pass **slug** and/or **org id (UUID)**. Slug match is case-insensitive; UUID must match exactly.
+
+```bash
+python3 main.py --orgs my-org-slug
+python3 main.py --orgs org-one org-two
+python3 main.py --orgs 70158a6b-3a6d-4bff-aace-9699582f5950
+```
+
+---
+
+## Filtering by SCM origin (`--origin` / `--origins`)
+
+By default **all** project origins in the org are processed. To limit to certain import sources, use either style (you can mix them):
+
+- **`--origin github --origin gitlab`**
+- **`--origins github gitlab`**
+
+Values are **case-insensitive** and must match what the API returns. Many GitHub App imports show as **`github-cloud-app`**, not `github`—run **`--dry-run`** once and copy the **`Origin:`** line if you are unsure.
+
+```bash
+python3 main.py --orgs my-org --origin github-cloud-app
+python3 main.py --orgs my-org --origins github gitlab
+```
+
+---
+
+## Activate only inactive projects (`--activate-inactive-only`)
+
+Does **not** deactivate. Only **activates** projects that are already inactive (`isMonitored` false). Same **`--origin` / `--origins`** filters apply.
+
+```bash
+python3 main.py --orgs my-org --activate-inactive-only --dry-run
+python3 main.py --orgs my-org --activate-inactive-only --origin github
+```
+
+---
+
+## Parallel workers (`--workers`)
+
+Each project needs **two** API calls for a full cycle (deactivate, then activate). On large tenants that is mostly **waiting on the network**, so **`--workers N`** runs up to **N** of those calls at the same time (default **1** = same as always).
+
+- Try **8–16** first; raise if 429s stay rare, lower if runs stall on rate limits.
+- Max **64**.
+- **`--workers` > 1:** set **`SNYK_TOKEN`** or OAuth variables in the environment (no interactive token).
+- With **N > 1**, spinners are replaced by a one-line note per org.
+
+```bash
+export SNYK_TOKEN="your-api-token"
+python3 main.py --orgs my-org --workers 12
+```
+
+---
+
+## Rate limits (`--rate-limit-attempts`)
+
+Max **consecutive HTTP 429** retries **per request** before failing (default **8**). Waits follow **`Retry-After`** when the API sends it.
+
+```bash
+python3 main.py --orgs my-org --rate-limit-attempts 12
+```
+
+---
+
+## Dry run and verbose
+
+- **`--dry-run`** — List what would happen; **no** deactivate/activate.
+- **`-v` / `--verbose`** — Print API bases, orgs visible to the token, and per-project ids/results.
+
+**UI looks unchanged after a full cycle:** projects end **active** again; the goal is often **webhooks / integration**, not a lasting “off” state. If nothing processed, check **region**, **org slug/UUID**, and try without **`--origin`** once.
+
+**`RequestsDependencyWarning`:** Usually a **`chardet`** version mismatch in your environment. Use **`pip install -U -r requirements.txt`** in a venv; see `requirements.txt` for the pinned range.
+
+---
+
+## Requirements
+
+- Python **3.9+** recommended  
+- **`pip install -r requirements.txt`**
+
+---
+
+## Copy-paste examples
+
+**API token, commercial (typical):**
+
+```bash
+export SNYK_TOKEN="your-api-token"
+pip install -r requirements.txt
+python3 main.py --orgs my-org-slug --dry-run
+python3 main.py --orgs my-org-slug --workers 12
+```
+
+**OAuth client credentials (good for automation):**
+
+```bash
+export SNYK_OAUTH_CLIENT_ID="…"
+export SNYK_OAUTH_CLIENT_SECRET="…"
+pip install -r requirements.txt
+python3 main.py --orgs my-org-slug --workers 12
+```
+
+---
+
+## Optional: Snyk for Government (FedRAMP)
+
+[Snyk for Government](https://docs.snyk.io/snyk-data-and-governance/snyk-for-government-us) does **not** allow static API tokens. Use **OAuth 2.0** (service account **client credentials**). This script refreshes access tokens when **`SNYK_OAUTH_CLIENT_ID`** and **`SNYK_OAUTH_CLIENT_SECRET`** are set.
 
 ```bash
 export SNYK_ENVIRONMENT=SNYK-GOV-01
@@ -51,153 +207,4 @@ pip install -r requirements.txt
 python3 main.py --orgs your-org-slug
 ```
 
-Optional: override URLs with `--api-url`, `--rest-api-url`, or `--oauth-token-url`, or the `SNYK_API_URL`, `SNYK_REST_API_URL`, and `SNYK_OAUTH_TOKEN_URL` environment variables. For security, URLs must use **HTTPS** and hostnames under **`*.snyk.io`** or **`*.snykgov.io`**. If your tenant uses another hostname, set `SNYK_ALLOW_UNVERIFIED_API_URL=1` (HTTPS is still required).
-
-## Region / environment
-
-Snyk hosts data in [regional API endpoints](https://docs.snyk.io/snyk-data-and-governance/regional-hosting-and-data-residency). This script must use the same region as the org you are managing, or you will not see the right organizations and projects (or calls may fail).
-
-**Ways to set the region (pick one or combine; CLI flags override the env var where both apply):**
-
-- **`export SNYK_ENVIRONMENT=...`** before running the script. If unset, the default is **`SNYK-US-01`**.
-- **`--environment NAME`** on the command line, for example `python3 main.py --environment SNYK-EU-01 --orgs my-org`.
-
-Each preset below sets the **API v1 base**, **REST API base**, and **OAuth2 token** URL together (aligned with `snyk config environment`):
-
-| Name | Notes |
-| --- | --- |
-| `SNYK-US-01` | Default when `SNYK_ENVIRONMENT` is not set. |
-| `SNYK-US-02` | United States (e.g. `api.us.snyk.io`) |
-| `SNYK-EU-01` | Europe |
-| `SNYK-AU-01` | Australia |
-| `SNYK-GOV-01` | Snyk for Government (FedRAMP); also see the **Snyk for Government** section above. |
-
-**Examples:**
-
-```bash
-# EU org — env var
-export SNYK_ENVIRONMENT=SNYK-EU-01
-python3 main.py --orgs my-org
-```
-
-```bash
-# US-02 org — flag only
-python3 main.py --environment SNYK-US-02 --orgs my-org
-```
-
-**Advanced:** Override individual bases without changing the rest of the preset: `--api-url`, `--rest-api-url`, and `--oauth-token-url`, or `SNYK_API_URL`, `SNYK_REST_API_URL`, and `SNYK_OAUTH_TOKEN_URL`. Use the same HTTPS and hostname rules as in the **Snyk for Government** section (including `SNYK_ALLOW_UNVERIFIED_API_URL` for nonstandard hosts).
-
-## Selecting organizations (`--orgs`)
-
-- Pass one or more **organization slugs** and/or **organization IDs** (UUID from the Snyk UI or API). Slug matching is **case-insensitive**; the ID must match exactly.
-- Omit `--orgs` to be prompted for orgs at runtime.
-
-Examples:
-
-```bash
-python3 main.py --orgs my-org-slug
-python3 main.py --orgs org-one org-two
-python3 main.py --orgs 70158a6b-3a6d-4bff-aace-9699582f5950
-```
-
-## Filtering by project origin (`--origin` / `--origins`)
-
-**Either form works**—pick one style, or mix them. Both apply the same filter (and are merged if you use both).
-
-Snyk stores an **`origin`** on each project (SCM / import source). By default the script processes **all** projects in the chosen orgs—**no** origin mapping is applied: whatever the API returns (for example `github-cloud-app` for many GitHub App–imported repos) is what gets listed and, on a real run, cycled or activated.
-
-To limit work to specific origins:
-
-- **`--origin ORIGIN`** — pass once per value (repeat the flag): `--origin github --origin gitlab`.
-- **`--origins ORIGIN [ORIGIN ...]`** — pass several values in one go: `--origins github gitlab` (same effect as two `--origin` flags).
-
-Matching is **case-insensitive**. If you do not pass `--origin` or `--origins`, every project origin is included.
-
-Examples:
-
-```bash
-# Only GitHub.com projects
-python3 main.py --orgs my-org --origin github
-
-# GitHub.com and GitHub Enterprise
-python3 main.py --orgs my-org --origin github --origin github-enterprise
-
-# Equivalent using --origins
-python3 main.py --orgs my-org --origins github github-enterprise
-
-# Only GitLab
-python3 main.py --orgs my-org --origin gitlab
-
-# Only projects whose API origin is github-cloud-app (GitHub App imports)
-python3 main.py --orgs my-org --origin github-cloud-app
-
-# Inactive GitHub App imports only
-python3 main.py --orgs my-org --activate-inactive-only --origin github-cloud-app
-```
-
-Common `origin` values include `github`, **`github-cloud-app`** (GitHub via the Snyk GitHub App—often what you see for Cloud imports), `github-enterprise`, `gitlab`, `bitbucket-cloud`, and `azure-repos`. The exact string depends on how the project was imported. **To filter with `--origin` / `--origins`, use the same value the API uses** (run once with `--dry-run` and copy the `Origin:` text, for example `Origin: github-cloud-app`).
-
-**Note:** `github` and `github-cloud-app` are different filters. If your dry-run shows `github-cloud-app`, use `--origin github-cloud-app` (or omit the origin flags to process those projects with everything else).
-
-## Activating only inactive projects (`--activate-inactive-only`)
-
-By default the script **deactivates then reactivates** every matching project. With **`--activate-inactive-only`**, it **never** deactivates: it only lists and activates projects whose Snyk API field **`isMonitored`** is **false** (inactive / not monitored in the UI). Already-active projects are left unchanged.
-
-The same **`--origin` / `--origins`** filters apply: only inactive projects whose origin passes the filter are activated.
-
-Examples:
-
-```bash
-# Preview which inactive projects would be activated
-python3 main.py --orgs my-org --activate-inactive-only --dry-run
-
-# Activate only inactive GitHub projects
-python3 main.py --orgs my-org --activate-inactive-only --origin github
-```
-
-In `main.py`, inactive projects for an org are resolved by the helper **`inactive_projects_in_org`** (origin filter + `not project.isMonitored`).
-
-## Rate limit retries (`--rate-limit-attempts`)
-
-- **`--rate-limit-attempts N`** — maximum number of **consecutive HTTP 429** responses to retry **per API request** before failing (default: **8**). Waits honor `Retry-After` when present.
-
-Example:
-
-```bash
-python3 main.py --orgs my-org --rate-limit-attempts 12
-```
-
-## Dry run (`--dry-run`) and verbose (`-v` / `--verbose`)
-
-- **`--dry-run`** — Lists orgs and projects that would be changed; does **not** call deactivate or activate. Without **`--activate-inactive-only`**, that means the full deactivate-then-reactivate cycle. With **`--activate-inactive-only`**, only inactive projects that would be activated are listed. Use to confirm the org, region, and (if any) origin filter before a real run.
-- **`-v` / `--verbose`** — Prints the resolved **environment and API base URLs**, every org the token can see (id and slug), and for each project the **project id**, **monitored** flag, and each API **ok** result. Use when a run “succeeds” but you are unsure anything happened, or the Snyk UI is confusing.
-
-**If the script exits cleanly but the UI “doesn’t change”:** a full cycle **deactivates and then reactivates** every selected project, so the **normal end state** is still **active** / monitored in the UI—only the **webhooks / integration** are refreshed, which may not look like a visible status flip. If you see a **warning** that no projects were processed, check **region** (`--environment`), **org** slug or UUID, and **`--origins`** (try omitting the origin filter once). If the script prints that some org names were not found, the token or region may not match that org.
-
-**`RequestsDependencyWarning` (urllib3 / chardet / charset_normalizer):** That message comes from the `requests` library on import. It often appears when **`chardet` 6.x** is installed: `requests` only accepts an older `chardet` (see the `chardet` line in `requirements.txt`). Reinstall with `pip install -U -r requirements.txt` (ideally in a venv) so dependencies match. The script still runs; the warning is from `requests` / your environment, not this repo’s code.
-
-# Full examples
-
-**Commercial (API token):**
-
-```bash
-export SNYK_TOKEN="your-api-token"
-pip install -r requirements.txt
-python3 main.py \
-  --orgs my-org-slug \
-  --origin github --origin github-enterprise \
-  --rate-limit-attempts 8
-```
-
-Same run using the other flag: `python3 main.py --orgs my-org-slug --origins github github-enterprise --rate-limit-attempts 8`.
-
-**OAuth client credentials (Enterprise / Gov-compatible):**
-
-```bash
-export SNYK_OAUTH_CLIENT_ID="…"
-export SNYK_OAUTH_CLIENT_SECRET="…"
-# For Gov:
-# export SNYK_ENVIRONMENT=SNYK-GOV-01
-pip install -r requirements.txt
-python3 main.py --orgs my-org-slug
-```
+Same **HTTPS / hostname** rules and optional **`SNYK_ALLOW_UNVERIFIED_API_URL=1`** as in **Region / environment** above.
