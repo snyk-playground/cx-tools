@@ -104,7 +104,7 @@ python3 main.py --orgs 70158a6b-3a6d-4bff-aace-9699582f5950
 
 **Either form works**—pick one style, or mix them. Both apply the same filter (and are merged if you use both).
 
-Snyk stores an **`origin`** on each project (SCM / import source, for example `github`, `gitlab`). By default the script processes **all** projects in the chosen orgs.
+Snyk stores an **`origin`** on each project (SCM / import source). By default the script processes **all** projects in the chosen orgs—**no** origin mapping is applied: whatever the API returns (for example `github-cloud-app` for many GitHub App–imported repos) is what gets listed and, on a real run, cycled or activated.
 
 To limit work to specific origins:
 
@@ -127,9 +127,17 @@ python3 main.py --orgs my-org --origins github github-enterprise
 
 # Only GitLab
 python3 main.py --orgs my-org --origin gitlab
+
+# Only projects whose API origin is github-cloud-app (GitHub App imports)
+python3 main.py --orgs my-org --origin github-cloud-app
+
+# Inactive GitHub App imports only
+python3 main.py --orgs my-org --activate-inactive-only --origin github-cloud-app
 ```
 
-Common `origin` values include `github`, `github-enterprise`, `gitlab`, `bitbucket-cloud`, and `azure-repos` (exact strings depend on how projects were imported in Snyk).
+Common `origin` values include `github`, **`github-cloud-app`** (GitHub via the Snyk GitHub App—often what you see for Cloud imports), `github-enterprise`, `gitlab`, `bitbucket-cloud`, and `azure-repos`. The exact string depends on how the project was imported. **To filter with `--origin` / `--origins`, use the same value the API uses** (run once with `--dry-run` and copy the `Origin:` text, for example `Origin: github-cloud-app`).
+
+**Note:** `github` and `github-cloud-app` are different filters. If your dry-run shows `github-cloud-app`, use `--origin github-cloud-app` (or omit the origin flags to process those projects with everything else).
 
 ## Activating only inactive projects (`--activate-inactive-only`)
 

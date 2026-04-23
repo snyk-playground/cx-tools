@@ -408,7 +408,7 @@ def main() -> None:
             "Deactivate and reactivate Snyk projects to rebuild SCM webhooks, "
             "or with --activate-inactive-only only activate projects that are already inactive. "
             "Optionally limit to projects with specific Snyk project origins "
-            "(SCM / import source, e.g. github, gitlab)."
+            "(SCM / import source, e.g. github, github-cloud-app, gitlab)."
         )
     )
     parser.add_argument(
@@ -427,8 +427,10 @@ def main() -> None:
         metavar="ORIGIN",
         help=(
             "Only process projects with this Snyk project origin (repeat for "
-            "several). Examples: github, github-enterprise, gitlab, "
-            "bitbucket-cloud, azure-repos. Omit to include all origins."
+            "several). Examples: github, github-cloud-app (GitHub App imports), "
+            "github-enterprise, gitlab, bitbucket-cloud, azure-repos. "
+            "Use the exact string the API returns (see dry-run). "
+            "Omit to include all origins."
         ),
     )
     parser.add_argument(
