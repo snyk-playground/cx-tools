@@ -1,11 +1,13 @@
 import argparse
+import concurrent.futures
 import email.utils
 import os
 import sys
+import threading
 import time
 import urllib.parse
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import requests
 import snyk
@@ -364,6 +366,155 @@ def _org_matches_token(org: Any, token: str) -> bool:
     return org.slug.casefold() == t.casefold()
 
 
+def _create_snyk_client(
+    args: argparse.Namespace,
+    urls: Dict[str, str],
+    *,
+    interactive_token: Optional[str] = None,
+) -> Any:
+    """
+    Build a Snyk client from CLI args, resolved URLs, and environment.
+    ``interactive_token`` is only used when no OAuth/API env credentials are set.
+    """
+    env_name = urls["environment"]
+    client_kw = {
+        "url": urls["api_url"],
+        "rest_api_url": urls["rest_api_url"],
+        "rate_limit_max_attempts": args.rate_limit_attempts,
+    }
+    oauth_client_id = os.environ.get("SNYK_OAUTH_CLIENT_ID")
+    oauth_client_secret = os.environ.get("SNYK_OAUTH_CLIENT_SECRET")
+    oauth_access = os.environ.get("SNYK_OAUTH_TOKEN")
+    api_key = os.environ.get("SNYK_TOKEN")
+
+    if oauth_client_id and oauth_client_secret:
+        return OAuthRateLimitAwareSnykClient(
+            "",
+            use_bearer=True,
+            oauth_client_id=oauth_client_id,
+            oauth_client_secret=oauth_client_secret,
+            oauth_token_url=urls["oauth_token_url"],
+            **client_kw,
+        )
+    if oauth_access:
+        return OAuthRateLimitAwareSnykClient(
+            oauth_access,
+            use_bearer=True,
+            **client_kw,
+        )
+    if api_key:
+        if env_name == "SNYK-GOV-01":
+            print(
+                "Snyk for Government (FedRAMP) does not support static API tokens; "
+                "use OAuth2 service account credentials (SNYK_OAUTH_CLIENT_ID and "
+                "SNYK_OAUTH_CLIENT_SECRET) or a short-lived SNYK_OAUTH_TOKEN.",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
+        return RateLimitAwareSnykClient(api_key, **client_kw)
+    if env_name == "SNYK-GOV-01":
+        raise SystemExit(
+            "FedRAMP / Snyk for Government requires OAuth2. Set "
+            "SNYK_OAUTH_CLIENT_ID and SNYK_OAUTH_CLIENT_SECRET (recommended), or "
+            "SNYK_OAUTH_TOKEN for a short-lived access token. "
+            "Static SNYK_TOKEN is not allowed."
+        )
+    if interactive_token is None:
+        raise SystemExit(
+            "No Snyk credentials in environment (SNYK_TOKEN or OAuth variables)."
+        )
+    return RateLimitAwareSnykClient(interactive_token.strip(), **client_kw)
+
+
+def _post_project_state_change(
+    client: Any, org_id: str, project_id: str, verb: str
+) -> bool:
+    """POST deactivate or activate (matches pysnyk Project.activate/deactivate paths)."""
+    path = f"org/{org_id}/project/{project_id}/{verb}"
+    return bool(client.post(path, {}))
+
+
+class _ThreadLocalClientHolder:
+    """One Snyk client per worker thread (OAuth refresh and requests are not shared)."""
+
+    def __init__(self, args: argparse.Namespace, urls: Dict[str, str]) -> None:
+        self._args = args
+        self._urls = urls
+        self._local = threading.local()
+
+    def get(self) -> Any:
+        client = getattr(self._local, "client", None)
+        if client is None:
+            self._local.client = _create_snyk_client(self._args, self._urls)
+        return self._local.client
+
+
+def _project_work_row(p: Any) -> Tuple[str, str, str, str, str, bool]:
+    return (
+        p.organization.id,
+        p.id,
+        p.name,
+        p.origin,
+        p.type,
+        p.isMonitored,
+    )
+
+
+def _run_parallel_project_posts(
+    holder: _ThreadLocalClientHolder,
+    rows: List[Tuple[str, str, str, str, str, bool]],
+    verb: str,
+    *,
+    workers: int,
+    verbose: bool,
+    log_lock: threading.Lock,
+    count_truthy_ok: bool,
+) -> Tuple[int, List[str]]:
+    """
+    Run deactivate or activate for many projects in parallel.
+    Returns (success_count, error_messages).
+
+    When ``count_truthy_ok`` is True (activate), increments success for truthy POST results,
+    matching ``if ok: total_projects_cycled += 1`` in the sequential path.
+    When False (deactivate), any completed POST without an exception counts as success
+    (the sequential path does not treat a falsy body as failure).
+    """
+    successes = 0
+    errors: List[str] = []
+
+    def _one(row: Tuple[str, str, str, str, str, bool]) -> Tuple[bool, Optional[str]]:
+        org_id, project_id, name, origin, typ, is_monitored = row
+        try:
+            c = holder.get()
+            if verbose:
+                with log_lock:
+                    print(
+                        f"    [verbose] POST {verb} project id={project_id} "
+                        f"isMonitored={is_monitored!r} origin={origin!r}"
+                    )
+            ok = _post_project_state_change(c, org_id, project_id, verb)
+            if verbose:
+                with log_lock:
+                    print(f"    [verbose] {verb} response ok={ok!r}")
+            if count_truthy_ok:
+                return ok, None
+            return True, None
+        except Exception as err:
+            return False, f"{name} ({verb}): {err}"
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_one, row) for row in rows]
+        for fut in concurrent.futures.as_completed(futures):
+            ok, err = fut.result()
+            if err:
+                with log_lock:
+                    print(f"\u001b[31m    {err}\u001b[0m")
+                errors.append(err)
+            elif ok:
+                successes += 1
+    return successes, errors
+
+
 def _resolve_urls(args: argparse.Namespace) -> Dict[str, str]:
     """API v1 base, REST base, and OAuth2 token URL for this run."""
     env_name = (
@@ -507,7 +658,24 @@ def main() -> None:
             "in the Snyk UI are unclear or something seems skipped."
         ),
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        metavar="N",
+        help=(
+            "Parallel HTTP workers for deactivate/activate (default: 1, fully sequential). "
+            "Try 8–16 for large orgs; higher values increase throughput but may trigger "
+            "more HTTP 429 responses (retries still apply). When N>1, credentials must come "
+            "from the environment (SNYK_TOKEN or OAuth variables), not an interactive prompt."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.workers < 1:
+        raise SystemExit("--workers must be >= 1")
+    if args.workers > 64:
+        raise SystemExit("--workers cannot exceed 64")
 
     allowed_origins = _parse_allowed_origins(args)
     input_orgs = list(args.orgs) if args.orgs else []
@@ -515,53 +683,25 @@ def main() -> None:
     urls = _resolve_urls(args)
     env_name = urls["environment"]
 
-    client_kw = {
-        "url": urls["api_url"],
-        "rest_api_url": urls["rest_api_url"],
-        "rate_limit_max_attempts": args.rate_limit_attempts,
-    }
-
     oauth_client_id = os.environ.get("SNYK_OAUTH_CLIENT_ID")
     oauth_client_secret = os.environ.get("SNYK_OAUTH_CLIENT_SECRET")
     oauth_access = os.environ.get("SNYK_OAUTH_TOKEN")
     api_key = os.environ.get("SNYK_TOKEN")
+    has_env_creds = bool(
+        (oauth_client_id and oauth_client_secret) or oauth_access or api_key
+    )
+    if args.workers > 1 and not has_env_creds:
+        raise SystemExit(
+            "--workers > 1 requires SNYK_TOKEN or OAuth credentials in the environment; "
+            "interactive API token entry is not supported with parallel workers."
+        )
 
-    if oauth_client_id and oauth_client_secret:
-        client = OAuthRateLimitAwareSnykClient(
-            "",
-            use_bearer=True,
-            oauth_client_id=oauth_client_id,
-            oauth_client_secret=oauth_client_secret,
-            oauth_token_url=urls["oauth_token_url"],
-            **client_kw,
-        )
-    elif oauth_access:
-        client = OAuthRateLimitAwareSnykClient(
-            oauth_access,
-            use_bearer=True,
-            **client_kw,
-        )
-    elif api_key:
-        if env_name == "SNYK-GOV-01":
-            print(
-                "Snyk for Government (FedRAMP) does not support static API tokens; "
-                "use OAuth2 service account credentials (SNYK_OAUTH_CLIENT_ID and "
-                "SNYK_OAUTH_CLIENT_SECRET) or a short-lived SNYK_OAUTH_TOKEN.",
-                file=sys.stderr,
-            )
-            raise SystemExit(1)
-        client = RateLimitAwareSnykClient(api_key, **client_kw)
-    else:
-        if env_name == "SNYK-GOV-01":
-            raise SystemExit(
-                "FedRAMP / Snyk for Government requires OAuth2. Set "
-                "SNYK_OAUTH_CLIENT_ID and SNYK_OAUTH_CLIENT_SECRET (recommended), or "
-                "SNYK_OAUTH_TOKEN for a short-lived access token. "
-                "Static SNYK_TOKEN is not allowed."
-            )
+    interactive_token: Optional[str] = None
+    if not has_env_creds:
         print("Enter your Snyk API Token")
-        snyk_token = input()
-        client = RateLimitAwareSnykClient(snyk_token, **client_kw)
+        interactive_token = input()
+
+    client = _create_snyk_client(args, urls, interactive_token=interactive_token)
 
     user_orgs = []
     try:
@@ -676,44 +816,73 @@ def main() -> None:
                 msg = "No projects match the origin filter (if any) in this org."
             print(f"  \u001b[90m{msg}\u001b[0m")
 
+        log_lock = threading.Lock()
+        parallel_holder: Optional[_ThreadLocalClientHolder] = None
+        if not args.dry_run and args.workers > 1 and projects:
+            parallel_holder = _ThreadLocalClientHolder(args, urls)
+            mode_hint = (
+                "activate only"
+                if args.activate_inactive_only
+                else "deactivate and activate"
+            )
+            print(
+                f"    Using \033[1;33m{args.workers}\u001b[0m concurrent worker(s) for "
+                f"{mode_hint} ({len(projects)} project(s))."
+            )
+
         if not args.activate_inactive_only:
-            for curr_project in projects:
-                curr_project_details = (
-                    f"Origin: {curr_project.origin}, Type: {curr_project.type}"
-                )
-                if args.dry_run:
+            if args.dry_run:
+                for curr_project in projects:
+                    curr_project_details = (
+                        f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                    )
                     print(
                         f"    [DRY-RUN] would deactivate: \u001b[1;33m{curr_project.name}\u001b[0m  "
                         f"(\u001b[34m{curr_project_details}\u001b[0m)"
                     )
-                    continue
-                action = "Deactivating"
-                spinner = yaspin(
-                    text=f"{action}\033[1;33m {curr_project.name}", color="yellow"
+            elif args.workers > 1 and parallel_holder is not None:
+                rows = [_project_work_row(p) for p in projects]
+                _run_parallel_project_posts(
+                    parallel_holder,
+                    rows,
+                    "deactivate",
+                    workers=args.workers,
+                    verbose=args.verbose,
+                    log_lock=log_lock,
+                    count_truthy_ok=False,
                 )
-                spinner.write(
-                    f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
-                )
-                spinner.start()
-                try:
-                    if args.verbose:
-                        print(
-                            f"    [verbose] POST deactivate project id={curr_project.id} "
-                            f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
-                        )
-                    ok = curr_project.deactivate()
-                    if args.verbose:
-                        print(f"    [verbose] deactivate response ok={ok!r}")
-                    spinner.ok("🆗 ")
-                except Exception as err:
-                    spinner.fail("💥 ")
-                    spinner.write(f"\u001b[31m    {err}\u001b[0m")
+            else:
+                for curr_project in projects:
+                    curr_project_details = (
+                        f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                    )
+                    action = "Deactivating"
+                    spinner = yaspin(
+                        text=f"{action}\033[1;33m {curr_project.name}", color="yellow"
+                    )
+                    spinner.write(
+                        f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
+                    )
+                    spinner.start()
+                    try:
+                        if args.verbose:
+                            print(
+                                f"    [verbose] POST deactivate project id={curr_project.id} "
+                                f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                            )
+                        ok = curr_project.deactivate()
+                        if args.verbose:
+                            print(f"    [verbose] deactivate response ok={ok!r}")
+                        spinner.ok("🆗 ")
+                    except Exception as err:
+                        spinner.fail("💥 ")
+                        spinner.write(f"\u001b[31m    {err}\u001b[0m")
 
-        for curr_project in projects:
-            curr_project_details = (
-                f"Origin: {curr_project.origin}, Type: {curr_project.type}"
-            )
-            if args.dry_run:
+        if args.dry_run:
+            for curr_project in projects:
+                curr_project_details = (
+                    f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                )
                 label = (
                     "would activate (inactive)"
                     if args.activate_inactive_only
@@ -723,30 +892,46 @@ def main() -> None:
                     f"    [DRY-RUN] {label}: \u001b[1;32m{curr_project.name}\u001b[0m  "
                     f"(\u001b[34m{curr_project_details}\u001b[0m)"
                 )
-                continue
-            action = "Activating"
-            spinner = yaspin(
-                text=f"{action}\033[1;32m {curr_project.name}", color="yellow"
+        elif args.workers > 1 and parallel_holder is not None:
+            rows = [_project_work_row(p) for p in projects]
+            n_ok, _ = _run_parallel_project_posts(
+                parallel_holder,
+                rows,
+                "activate",
+                workers=args.workers,
+                verbose=args.verbose,
+                log_lock=log_lock,
+                count_truthy_ok=True,
             )
-            spinner.write(
-                f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
-            )
-            spinner.start()
-            try:
-                if args.verbose:
-                    print(
-                        f"    [verbose] POST activate project id={curr_project.id} "
-                        f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
-                    )
-                ok = curr_project.activate()
-                if args.verbose:
-                    print(f"    [verbose] activate response ok={ok!r}")
-                if ok:
-                    total_projects_cycled += 1
-                spinner.ok("🆗 ")
-            except Exception as err:
-                spinner.fail("💥 ")
-                spinner.write(f"\u001b[31m    {err}\u001b[0m")
+            total_projects_cycled += n_ok
+        else:
+            for curr_project in projects:
+                curr_project_details = (
+                    f"Origin: {curr_project.origin}, Type: {curr_project.type}"
+                )
+                action = "Activating"
+                spinner = yaspin(
+                    text=f"{action}\033[1;32m {curr_project.name}", color="yellow"
+                )
+                spinner.write(
+                    f"\u001b[0m    Processing project: \u001b[34m{curr_project_details}\u001b[0m, Status Below👇"
+                )
+                spinner.start()
+                try:
+                    if args.verbose:
+                        print(
+                            f"    [verbose] POST activate project id={curr_project.id} "
+                            f"isMonitored={curr_project.isMonitored!r} origin={curr_project.origin!r}"
+                        )
+                    ok = curr_project.activate()
+                    if args.verbose:
+                        print(f"    [verbose] activate response ok={ok!r}")
+                    if ok:
+                        total_projects_cycled += 1
+                    spinner.ok("🆗 ")
+                except Exception as err:
+                    spinner.fail("💥 ")
+                    spinner.write(f"\u001b[31m    {err}\u001b[0m")
 
     if input_orgs:
         print(
