@@ -3,3 +3,4 @@ asyncio>=3.4.3
 aiohttp>=3.8.1
 click>=8.1.2
 pandas
+requests>=2.32.4 # not directly required, pinned by Snyk to avoid a vulnerability
