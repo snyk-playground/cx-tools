@@ -1,0 +1,96 @@
+# -----------------------------------------------------------------------------
+# Snyk + GitHub merge queue — required check bypass (pattern #2 from Snyk)
+#
+# Context: Snyk's native PR checks are not reported on merge_group events, so a
+# branch protection rule that requires "code/snyk (Your Org)" blocks the merge
+# queue (the check never appears for the merge-group commit).
+#
+# This workflow runs only on merge_group and publishes a *successful* GitHub
+# Check Run whose `name` exactly matches your Snyk required check. That satisfies
+# merge queue / branch protection while you keep real Snyk results on pull_request.
+#
+# Prerequisites
+# 1. Snyk still runs on pull_request (or CI) before PRs enter the queue — this
+#    job does not replace scanning; it only supplies the missing status name.
+# 2. In GitHub: Settings → Secrets and variables → Actions → Variables
+#    Add: SNYK_REQUIRED_CHECK_NAME = exact string from Branch protection, e.g.
+#    code/snyk (your-org-name)
+# 3. Branch protection: add that same name as a required status check, and do
+#    not restrict the source (per Snyk guidance: do not tie the rule to only
+#    the Snyk GitHub App).
+#
+# Why the Checks API: A plain Actions job shows up as "Workflow name / Job name"
+# (with spaces). Snyk's check is often a single string like code/snyk (Org).
+# Creating a check run via the API sets `name` to match byte-for-byte.
+# -----------------------------------------------------------------------------
+
+name: Snyk merge-queue required check
+
+on:
+  merge_group:
+    types: [checks_requested]
+    # Optional: limit to your default branch queue
+    # branches:
+    #   - main
+
+permissions:
+  contents: read
+  checks: write
+
+concurrency:
+  group: snyk-mq-bypass-${{ github.event.merge_group.head_sha }}
+  cancel-in-progress: true
+
+jobs:
+  snyk-merge-queue-status:
+    name: Publish Snyk placeholder check for merge queue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure SNYK_REQUIRED_CHECK_NAME is configured
+        env:
+          SNYK_CHECK_NAME: ${{ vars.SNYK_REQUIRED_CHECK_NAME }}
+        run: |
+          if [ -z "${SNYK_CHECK_NAME}" ]; then
+            echo "::error title=Missing configuration::Set repository variable SNYK_REQUIRED_CHECK_NAME to the exact required status check name (e.g. code/snyk (your-org))."
+            exit 1
+          fi
+
+      - name: Create successful check run (matches Snyk required check name)
+        uses: actions/github-script@v7
+        env:
+          SNYK_CHECK_NAME: ${{ vars.SNYK_REQUIRED_CHECK_NAME }}
+        with:
+          script: |
+            const checkName = process.env.SNYK_CHECK_NAME;
+            const sha = context.payload.merge_group.head_sha;
+            const { owner, repo } = context.repo;
+
+            await github.rest.checks.create({
+              owner,
+              repo,
+              name: checkName,
+              head_sha: sha,
+              status: 'completed',
+              conclusion: 'success',
+              details_url: `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`,
+              output: {
+                title: 'Snyk — merge queue placeholder',
+                summary:
+                  'Native Snyk integration does not run on `merge_group`. This check exists only so the merge queue can satisfy the same required status name as on pull requests. **Rely on Snyk results from the pull request (or CI) before merging.**',
+              },
+            });
+
+# -----------------------------------------------------------------------------
+# Alternative (Snyk doc): single always-green job — only if the displayed
+# Actions check name exactly equals your Snyk check (often it will not).
+#
+# on:
+#   merge_group:
+#     types: [checks_requested]
+# jobs:
+#   snyk:
+#     name: code/snyk (your-org)   # must match required check exactly
+#     runs-on: ubuntu-latest
+#     steps:
+#       - run: echo "Merge queue bypass; Snyk validated on the PR."
+# -----------------------------------------------------------------------------
