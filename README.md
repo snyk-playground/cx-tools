@@ -48,6 +48,7 @@ This is a list of examples and scripts compiled by the Snyk Customer Experience 
 - [How to generate a list (CSV) of all user and service accounts in a group](userlist)
 - [Pysnyk examples](https://github.com/snyk-labs/pysnyk/tree/master/examples)
 - [Tool for bulk project deletion](bulk-delete)
+- [How to convert a CSV of repos into an import-projects.json for snyk-api-import](csv-to-snyk-api-import)
 
 # Guides
 

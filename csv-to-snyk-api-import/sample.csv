@@ -1,0 +1,7 @@
+repo_url,snyk_org_id,snyk_org_name,branch,exclusion_globs
+https://github.com/my-org/my-app,org-abc-123,,main,
+https://github.com/my-org/my-lib,org-abc-123,,develop,"fixtures, tests"
+https://dev.azure.com/my-org/my-project/_git/my-service,,My New Org,main,
+https://github.com/my-org/another-repo,,My New Org,,
+https://bitbucket.org/my-workspace/my-bb-repo,org-abc-123,,main,
+https://bb.mycompany.com/scm/PROJ/my-server-repo.git,,My New Org,main,
